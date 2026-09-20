@@ -1,0 +1,1886 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Big Brother: All Stars Simulator</title>
+<style>
+:root{--bg:#0b0b12;--panel:#151522;--panel2:#1d1d2d;--text:#f7f7fb;--muted:#aaaabd;--accent:#b98cff;--danger:#ff5f72;--safe:#65d89a;--gold:#ffd86b}
+*{box-sizing:border-box} body{margin:0;background:linear-gradient(135deg,#090910,#151022);color:var(--text);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+header{padding:22px 18px;border-bottom:1px solid #29293a;background:#10101a;position:sticky;top:0;z-index:5}
+h1{margin:0;font-size:22px}.sub{color:var(--muted);font-size:13px;margin-top:4px}
+.wrap{max-width:1100px;margin:auto;padding:16px}.grid{display:grid;grid-template-columns:1.2fr .8fr;gap:14px}
+.card{background:rgba(21,21,34,.94);border:1px solid #2a2a3e;border-radius:16px;padding:15px;box-shadow:0 8px 30px #0004}
+.section-title{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:10px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.stat{background:var(--panel2);border-radius:12px;padding:10px}.stat b{display:block;font-size:18px}.stat span{font-size:11px;color:var(--muted)}
+.house{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.person{padding:10px;border-radius:12px;background:var(--panel2);border:1px solid transparent}.person.you{border-color:var(--accent)}.person.elim{opacity:.4;text-decoration:line-through}.person .role{font-size:11px;color:var(--muted)}
+.buttons{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.buttons button,.topbuttons button{border:0;border-radius:11px;padding:11px;background:#29293d;color:white;font-weight:650;cursor:pointer}.buttons button:hover,.topbuttons button:hover{background:#383852}
+.log{height:330px;overflow:auto;background:#0d0d15;border-radius:12px;padding:10px;font-size:13px;line-height:1.45}.log p{margin:0 0 9px}.time{color:var(--accent);font-weight:700}.system{color:var(--gold)}.social{color:#76c7ff}
+.relationships{display:grid;gap:7px}.rel{display:grid;grid-template-columns:100px 1fr 45px;align-items:center;gap:7px;font-size:12px}.bar{height:7px;background:#303044;border-radius:99px;overflow:hidden}.fill{height:100%;background:var(--accent)}
+.topbuttons{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.topbuttons button{padding:8px 12px}
+@media(max-width:800px){.grid{grid-template-columns:1fr}.house{grid-template-columns:repeat(2,1fr)}.stats{grid-template-columns:repeat(2,1fr)}}
+
+/* Multi-screen simulator UI */
+.screen{display:none}
+.screen.active{display:block}
+.screen-home.active{display:grid}
+.appbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.backbtn{border:0;border-radius:11px;padding:9px 13px;background:#29293d;color:#fff;font-weight:700;cursor:pointer}
+.screen-title{font-size:21px;font-weight:800;margin:0}
+.screen-subtitle{font-size:13px;color:var(--muted);margin-top:4px}
+.action-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.action-card{border:1px solid #303047;border-radius:15px;background:linear-gradient(145deg,#202037,#171724);padding:18px;text-align:left;color:#fff;cursor:pointer;min-height:105px}
+.action-card:hover{border-color:#8f70d6;transform:translateY(-1px)}
+.action-card .ico{font-size:24px;display:block;margin-bottom:9px}
+.action-card b{font-size:14px}
+.action-card small{display:block;color:var(--muted);margin-top:5px;line-height:1.3}
+.target-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.target-card{border:1px solid #303047;border-radius:13px;background:#1b1b2b;color:#fff;padding:13px;text-align:left;cursor:pointer}
+.target-card:hover{background:#29293e;border-color:#9c7ce0}
+.target-card .mini{font-size:11px;color:var(--muted);display:block;margin-top:4px}
+.result-card{max-width:760px;margin:auto}
+.result-text{background:#0d0d15;border-radius:14px;padding:18px;line-height:1.6;font-size:14px;min-height:100px}
+.choice-row{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}
+.choice-row button{border:0;border-radius:11px;padding:11px 14px;background:#29293d;color:#fff;font-weight:700;cursor:pointer}
+.home-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+@media(max-width:800px){.action-grid,.target-grid{grid-template-columns:repeat(2,1fr)}.home-summary{grid-template-columns:repeat(2,1fr)}}
+
+
+.custom-season-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.season-card{border:1px solid #303047;border-radius:15px;background:linear-gradient(145deg,#202037,#171724);color:#fff;padding:18px;text-align:left;cursor:pointer}
+.season-card:hover{border-color:#9c7ce0;transform:translateY(-1px)}
+.season-card .year{font-size:25px;font-weight:900}.season-card .count{color:var(--muted);font-size:12px;margin-top:5px}
+.cast-select{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.cast-option{background:#1b1b2b;border:1px solid #303047;border-radius:12px;padding:11px;color:#fff;cursor:pointer}
+.cast-option.selected{border-color:#b98cff;background:#29243b}
+.cast-option input{accent-color:#b98cff;margin-right:7px}
+@media(max-width:800px){.custom-season-grid,.cast-select{grid-template-columns:repeat(2,1fr)}}
+
+
+.mini-game{background:var(--card,#171717);border:1px solid #333;border-radius:16px;padding:18px;margin-top:14px}
+.game-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.game-btn{padding:14px 10px;border-radius:12px;border:1px solid #444;background:#222;color:#fff;font-weight:700;cursor:pointer}
+.game-btn:hover{border-color:#aaa}
+.game-btn:disabled{opacity:.45;cursor:not-allowed}
+.game-stat{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid #2b2b2b}
+.game-result{margin-top:14px;padding:13px;border-radius:12px;background:#101010}
+
+
+.popularity-panel{margin-top:16px;padding:16px;border:1px solid #333;border-radius:16px;background:var(--card,#171717)}
+.popularity-bars{display:flex;flex-direction:column;gap:9px;margin-top:12px}
+.pop-row{display:grid;grid-template-columns:90px 1fr 55px;gap:8px;align-items:center;font-size:.9rem}
+.pop-track{height:13px;background:#292929;border-radius:99px;overflow:hidden}
+.pop-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#8b5cf6,#ec4899)}
+.public-votes{margin-top:14px;padding:13px;border-radius:12px;background:#101010}
+.vote-line{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #292929}
+
+/* Expanded competition + reward system */
+.comp-hub{padding:18px;border:1px solid #333;border-radius:16px;background:#171717;margin-top:14px}
+.comp-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+.comp-btn{padding:14px;border:1px solid #444;border-radius:12px;background:#222;color:#fff;font-weight:700;text-align:left;cursor:pointer}
+.comp-btn small{display:block;opacity:.7;font-weight:400;margin-top:4px}
+.reward-box{margin-top:14px;padding:14px;border-radius:12px;background:#101010}
+.reward-chip{display:inline-block;padding:5px 9px;border-radius:999px;border:1px solid #444;margin:3px;font-size:.8rem}
+.challenge-result{margin-top:14px;padding:15px;border-radius:12px;background:#101010;border:1px solid #333}
+@media(max-width:600px){.comp-grid{grid-template-columns:1fr}}
+
+.live-feed-card{
+  width:100%;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  margin-top:14px;
+  padding:17px;
+  text-align:left;
+  color:var(--text);
+  background:linear-gradient(145deg,#151520,#0f0f16);
+  border:1px solid #30303f;
+  border-radius:18px;
+  cursor:pointer;
+}
+.live-feed-card:hover{border-color:#6f5ab0;transform:translateY(-1px)}
+.live-feed-icon{
+  width:46px;height:46px;display:grid;place-items:center;
+  border-radius:14px;background:rgba(139,92,246,.13);
+  border:1px solid rgba(139,92,246,.25);font-size:22px;flex:0 0 46px
+}
+.live-feed-copy{flex:1}
+.live-feed-copy b{display:block;font-size:15px}
+.live-feed-copy small{display:block;color:var(--muted);margin-top:4px;line-height:1.35}
+.live-feed-arrow{font-size:30px;color:#77778b}
+.live-feed-screen-head{
+  display:flex;justify-content:space-between;gap:12px;
+  margin:14px 0;padding:11px 13px;border-radius:12px;
+  background:#0c0c13;border:1px solid #292936;color:#a9a9b9;font-size:12px
+}
+.live-feed-screen-head span:first-child{color:#fb7185;font-weight:800}
+.live-feed-log{max-height:none;min-height:50vh}
+.preset-label{font-size:12px;color:var(--muted);margin:14px 0 8px}
+.preset-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.preset-btn{
+  padding:11px 12px;border-radius:12px;border:1px solid #30303f;
+  background:#151520;color:#eee;text-align:left;cursor:pointer
+}
+.preset-btn:hover{border-color:#8b5cf6;background:#1a1926}
+.send-action{
+  width:100%;margin-top:10px;padding:13px 15px;border:0;border-radius:13px;
+  background:linear-gradient(90deg,#7c3aed,#db2777);color:#fff;font-weight:800;cursor:pointer
+}
+@media(max-width:600px){.preset-grid{grid-template-columns:1fr}}
+.preset-btn.selected{border-color:#8b5cf6!important;background:#211b35!important;box-shadow:0 0 0 2px rgba(139,92,246,.12)}
+.conversation-result blockquote{margin:12px 0;padding:14px 16px;border-left:3px solid #8b5cf6;background:#10101a;border-radius:0 12px 12px 0;color:#f3f3f8;font-size:16px;line-height:1.5}
+.conversation-result .result-label{margin-top:16px;font-size:11px;letter-spacing:.12em;font-weight:800;color:#8f8fa3}
+.conversation-result ul{padding-left:20px;color:#c9c9d5;line-height:1.65}
+
+<style id="conversation-flow-style">
+.conversation-card{max-width:760px}
+.conversation-thread{display:flex;flex-direction:column;gap:10px;margin-top:16px}
+.chat-row{display:flex;width:100%}
+.chat-row.them{justify-content:flex-start}
+.chat-row.me{justify-content:flex-end}
+.chat-bubble{max-width:82%;padding:12px 14px;border-radius:17px;line-height:1.45}
+.chat-bubble.them{background:#1a1a25;border:1px solid #30303f;border-bottom-left-radius:5px}
+.chat-bubble.me{background:linear-gradient(135deg,#6d3fc7,#a83b7e);color:white;border-bottom-right-radius:5px}
+.chat-name{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.65;margin-bottom:4px}
+.chat-time{font-size:10px;color:#888898;margin-top:5px}
+.conversation-choice-area{margin-top:18px;padding-top:14px;border-top:1px solid #292936}
+.choice-heading{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:#9999a9;font-weight:800;margin-bottom:9px}
+.conversation-choice{width:100%;text-align:left;padding:13px 14px;margin:6px 0;border-radius:13px;background:#151520;border:1px solid #30303f;color:#f4f4f8;cursor:pointer}
+.conversation-choice:hover{border-color:#8b5cf6;background:#1c1930}
+.conversation-choice.custom{border-style:dashed}
+.conversation-flow{margin-top:14px}
+.flow-note{padding:11px 13px;border-radius:12px;background:#0d0d14;border:1px solid #282834;color:#aaaaba;font-size:12px}
+.flow-note b{color:#e6e6ef}
+.flow-continue{width:100%;padding:13px;margin-top:9px;border-radius:13px;border:1px solid #39394a;background:#191923;color:#fff;font-weight:800;cursor:pointer}
+.flow-continue:hover{border-color:#8b5cf6}
+</style>
+</style>
+</head>
+<body>
+<header><div class="wrap" style="padding:0"><h1>🏠 Big Brother: All Stars Simulator</h1><div class="sub">You play Montrose. Everyone else plays for themselves.</div></div></header>
+
+<main class="wrap">
+
+  <!-- HOME SCREEN -->
+  <section id="screen-home" class="screen screen-home active">
+    <div>
+      <div class="card">
+        <div class="appbar">
+          <div>
+            <div class="section-title">DAY <span id="home-day">1</span> • <span id="home-time">Morning</span></div>
+            <h2 class="screen-title">The Big Brother House</h2>
+            <div class="screen-subtitle">You are Montrose. What do you want to do?</div>
+          </div>
+        </div>
+
+        <div class="home-summary">
+          <div class="stat"><b id="home-hoh">—</b><span>HOH</span></div>
+          <div class="stat"><b id="home-nominees">—</b><span>NOMINEES</span></div>
+          <div class="stat"><b id="home-viewers">4.20m</b><span>VIEWERS</span></div>
+          <div class="stat"><b id="home-power">Secret Veto</b><span>POWER</span></div>
+        </div>
+
+        <div class="choice-row" style="margin-bottom:14px">
+
+
+
+</div>
+
+<button onclick="openCustomCast()" style="border:0;border-radius:11px;padding:10px 14px;background:#29293d;color:#fff;font-weight:800;cursor:pointer">👥 Custom Cast</button></div><div class="section-title">Choose an action</div>
+        <div class="action-grid">
+          <button class="action-card" onclick="openAction('talk')"><span class="ico">💬</span><b>Talk</b><small>Have a conversation with a housemate.</small></button>
+          <button class="action-card" onclick="openAction('pull')"><span class="ico">🤫</span><b>Pull someone aside</b><small>Have a more private strategic chat.</small></button>
+          <button class="action-card" onclick="openAction('eavesdrop')"><span class="ico">🕵️</span><b>Eavesdrop</b><small>Try to hear what others are saying.</small></button>
+          <button class="action-card" onclick="openAction('diary')"><span class="ico">🎥</span><b>Diary Room</b><small>Speak privately with Big Brother.</small></button>
+          <button class="action-card" onclick="openAction('romance')"><span class="ico">💕</span><b>Romance</b><small>Spend some private time with your boyfriend.</small></button>
+          <button class="action-card" onclick="openAction('deal')"><span class="ico">🤝</span><b>Make a deal</b><small>Offer someone an alliance or Final Two.</small></button>
+          <button class="action-card" onclick="openAction('rumour')"><span class="ico">🗣️</span><b>Spread a rumour</b><small>Put information into circulation.</small></button>
+          <button class="action-card" onclick="openAction('house')"><span class="ico">🎲</span><b>House activity</b><small>Join the house and build relationships.</small></button>
+          <button class="action-card" onclick="openAction('rest')"><span class="ico">😴</span><b>Keep to yourself</b><small>Stay out of the drama and observe.</small></button>
+          <button class="action-card" onclick="openAction('power')"><span class="ico">⚡</span><b>Check / use power</b><small>Look at your hidden powers.</small></button>
+        </div>
+      </div>
+
+      <div class="house-pulse" id="house-pulse">
+  <span class="pulse-dot"></span><span><b>House activity</b> — Other housemates continue playing independently.</span>
+</div>
+    </div>
+
+    <aside>
+      <div class="card">
+        <div class="section-title">Your reputation</div>
+        <div id="rep"></div>
+      </div>
+      <div class="card" style="margin-top:14px">
+        <div class="section-title">Known information</div>
+        <div id="info"></div>
+      </div>
+    </aside>
+  </section>
+
+
+  <!-- LIVE FEED SCREEN -->
+  <section id="screen-livefeed" class="screen">
+    <div class="card">
+      <div class="appbar">
+        <div>
+          <div class="section-title">📺 LIVE FEED</div>
+          <h2 class="screen-title">What is happening in the house?</h2>
+          <div class="screen-subtitle">Housemates continue making their own moves, even when Montrose isn't there.</div>
+        </div>
+        <button class="backbtn" onclick="showScreen('home')">← Home</button>
+      </div>
+      <div class="live-feed-screen-head">
+        <span>🔴 LIVE</span>
+        <span id="live-feed-status">Independent house activity</span>
+      </div>
+      <div class="log live-feed-log" id="live-feed-log"></div>
+    </div>
+  </section>
+
+  <!-- CUSTOM CAST SCREEN -->
+  <section id="screen-custom" class="screen">
+    <div class="card">
+      <div class="appbar">
+        <div>
+          <h2 class="screen-title">👥 Custom Cast</h2>
+          <div class="screen-subtitle">Choose a real Big Brother UK series, then choose who enters your season.</div>
+        </div>
+        <button class="backbtn" onclick="showScreen('home')">← Home</button>
+      </div>
+      <div id="custom-cast-body"></div>
+    </div>
+  </section>
+
+  <!-- ACTION SCREEN -->
+  <section id="screen-action" class="screen">
+    <div class="card">
+      <div class="appbar">
+        <div>
+          <h2 class="screen-title" id="action-title">Choose an action</h2>
+          <div class="screen-subtitle" id="action-subtitle">Choose what Montrose does next.</div>
+        </div>
+        <button class="backbtn" onclick="showScreen('home')">← Home</button>
+      </div>
+      <div id="action-body"></div>
+    </div>
+  </section>
+
+  <!-- CONVERSATION SCREEN -->
+  <section id="screen-conversation" class="screen">
+    <div class="card conversation-card">
+      <div class="appbar">
+        <div>
+          <div class="section-title" id="conversation-kicker">PRIVATE CHAT</div>
+          <h2 class="screen-title" id="conversation-title">Talking to someone</h2>
+          <div class="screen-subtitle" id="conversation-subtitle">Morning</div>
+        </div>
+        <button class="backbtn" type="button" id="conversation-exit">← House</button>
+      </div>
+      <div class="conversation-thread" id="conversation-thread" aria-live="polite"></div>
+      <div class="conversation-choice-area" id="conversation-choice-area"></div>
+      <div class="conversation-flow" id="conversation-flow"></div>
+    </div>
+  </section>
+
+<!-- POST-CONVERSATION HOUSE UPDATE SCREEN -->
+  <section id="screen-houseupdate" class="screen">
+    <div class="card house-update-card">
+      <div class="section-title">🏠 HOUSE UPDATE</div>
+      <h2 class="screen-title" id="houseupdate-title">After the conversation</h2>
+      <div class="screen-subtitle" id="houseupdate-subtitle"></div>
+
+      <div class="house-update-main" id="houseupdate-main"></div>
+
+      <div class="house-update-section">
+        <div class="section-mini-title">💬 WHAT WAS SAID</div>
+        <div id="houseupdate-conversation"></div>
+      </div>
+
+      <div class="house-update-section">
+        <div class="section-mini-title">📈 WHAT CHANGED</div>
+        <div id="houseupdate-changes"></div>
+      </div>
+
+      <div class="house-update-section">
+        <div class="section-mini-title">🎬 WHILE YOU WERE TALKING</div>
+        <div id="houseupdate-house"></div>
+      </div>
+
+      <button type="button" class="send-action" id="houseupdate-continue">Continue →</button>
+    </div>
+  </section>
+
+<!-- RESULT SCREEN -->
+  <section id="screen-result" class="screen">
+    <div class="card result-card">
+      <div class="appbar">
+        <div>
+          <div class="section-title" id="result-kicker">LIVE FEED</div>
+          <h2 class="screen-title" id="result-title">What happened?</h2>
+        </div>
+      </div>
+      <div class="result-text" id="result-text"></div>
+      <div class="choice-row">
+        <button onclick="showScreen('home')">← Back to house</button>
+        <button onclick="openLastAction()">↻ Do another action</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+let cast=[
+{name:"Montrose",age:18,role:"Winner • You",you:true,rel:85,trust:68,threat:82},
+{name:"Marcus",age:24,role:"Previous-season winner",rel:95,trust:75,threat:88},
+{name:"Sophie",age:26,role:"Season 1 runner-up",rel:78,trust:60,threat:76},
+{name:"Aisha",age:23,role:"Season 1 returnee",rel:64,trust:48,threat:69},
+{name:"Rhea",age:26,role:"Season 2 winner",rel:55,trust:52,threat:74},
+{name:"Callan",age:29,role:"Season 2 runner-up",rel:48,trust:43,threat:79},
+{name:"Jade",age:23,role:"Season 3 • 4th",rel:42,trust:38,threat:57},
+{name:"Marcus S3",age:31,role:"Season 3 winner",rel:50,trust:46,threat:81},
+{name:"Talia",age:25,role:"Season 4 • 3rd",rel:58,trust:55,threat:62},
+{name:"Andre",age:27,role:"Season 4 • 5th",rel:45,trust:41,threat:77},
+{name:"Maya",age:22,role:"Season 5 • 6th",rel:60,trust:57,threat:51},
+{name:"Kane",age:30,role:"Season 5 runner-up",rel:39,trust:35,threat:86}
+];
+
+const fresh=()=>({
+day:1, time:"Morning", hoh:null, nominees:[], veto:null, vetoHolder:null,
+viewers:4.20, evicted:[], log:[], relationships:{}, trust:{}, alliances:[],
+known:["Everyone knows Montrose and his boyfriend are together.","The house knows Montrose won his original season.","Secret conversations remain hidden unless Montrose learns about them."],
+rep:{strategic:84,social:72,competition:61,trustworthy:55},
+powers:["Secret Veto"], usedPowers:[], shopping:"GREEN", nominationsDone:false,
+track:[], polls:{favourite:"Montrose",dangerous:"Kane",entertaining:"Jade"}
+});
+
+let state=fresh();
+cast.forEach(p=>{if(!p.you){state.relationships[p.name]=p.rel;state.trust[p.name]=p.trust}});
+
+function esc(s){return String(s).replace(/[&<>]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[m]))}
+function random(a){return a[Math.floor(Math.random()*a.length)]}
+function others(){return cast.filter(p=>!p.you&&!state.evicted.includes(p.name))}
+function change(n,d){if(state.relationships[n]!=null)state.relationships[n]=Math.max(0,Math.min(100,state.relationships[n]+d))}
+function trust(n,d){if(state.trust[n]!=null)state.trust[n]=Math.max(0,Math.min(100,state.trust[n]+d))}
+function log(t,c=""){state.log.push({text:t,cls:c});if(state.log.length>120)state.log.shift();renderLog()}
+function renderLog(){
+ const html=state.log.map(x=>`<p class="${x.cls}">${x.text}</p>`).join("");
+ const e=document.getElementById("log");
+ if(e){e.innerHTML=html;e.scrollTop=e.scrollHeight;}
+ const lf=document.getElementById("live-feed-log");
+ if(lf){lf.innerHTML=html;lf.scrollTop=lf.scrollHeight;}
+}
+function render(){
+ const pulse=document.getElementById("house-pulse");
+ if(pulse){
+   const recent=state.log.filter(x=>x.text&&!x.text.includes("Montrose talks")).slice(-1)[0];
+   pulse.innerHTML=`<span class="pulse-dot"></span><span><b>House activity</b> — ${recent?String(recent.text).replace(/<[^>]*>/g,"").slice(-150):"The house is settling into the next part of the day."}</span>`;
+ }
+
+ document.getElementById("day").textContent=state.day;
+ document.getElementById("hoh").textContent=state.hoh||"—";
+ document.getElementById("nominees").textContent=state.nominees.length?state.nominees.join(" / "):"—";
+ document.getElementById("viewers").textContent=state.viewers.toFixed(2)+"m";
+ document.getElementById("home-day").textContent=state.day;
+ document.getElementById("home-time").textContent=state.time;
+ document.getElementById("home-hoh").textContent=state.hoh||"—";
+ document.getElementById("home-nominees").textContent=state.nominees.length?state.nominees.join(" / "):"—";
+ document.getElementById("home-viewers").textContent=state.viewers.toFixed(2)+"m";
+ document.getElementById("home-power").textContent=state.powers.filter(x=>!state.usedPowers.includes(x)).join(", ")||"None";
+ document.getElementById("house").innerHTML=cast.map(p=>`<div class="person ${p.you?"you":""} ${state.evicted.includes(p.name)?"elim":""}">
+ <b>${p.you?"⭐ ":""}${p.name}</b><div class="role">${p.role}</div>
+ ${state.hoh===p.name?'<div style="color:#ffd86b;font-size:11px">👑 HOH</div>':''}
+ ${state.nominees.includes(p.name)?'<div style="color:#ff7180;font-size:11px">🟥 NOMINATED</div>':''}
+ ${state.evicted.includes(p.name)?'<div style="color:#ff7180;font-size:11px">⬛ EVICTED</div>':''}</div>`).join("");
+ document.getElementById("rels").innerHTML=others().map(p=>`<div class="rel"><span>${p.name}</span><div class="bar"><div class="fill" style="width:${state.relationships[p.name]}%"></div></div><span>${Math.round(state.relationships[p.name])}</span></div>`).join("");
+ document.getElementById("rep").innerHTML=`Strategic threat: <b>${state.rep.strategic}/100</b><br>Social: <b>${state.rep.social}/100</b><br>Competition: <b>${state.rep.competition}/100</b><br>Trustworthiness: <b>${state.rep.trustworthy}/100</b><hr style="border-color:#29293a">Shopping: <b>${state.shopping}</b><br>Power: <b>${state.powers.filter(x=>!state.usedPowers.includes(x)).join(", ")||"None"}</b>`;
+ document.getElementById("info").innerHTML=state.known.slice(-12).map(x=>`• ${esc(x)}`).join("<br>");
+ renderLog();
+}
+function chooseTarget(title="Choose a housemate"){
+ const live=others();
+ const names=live.map((p,i)=>`${i+1}. ${p.name}`).join("\n");
+ const n=parseInt(prompt(`${title}\n\n${names}`),10);
+ return Number.isInteger(n)&&live[n-1]?live[n-1]:null;
+}
+function act(type){
+ if(state.evicted.includes("Montrose"))return;
+ let t;
+ if(type==="talk"){t=chooseTarget("Who do you want to talk to?");if(!t)return;change(t.name,4);trust(t.name,2);state.rep.social=Math.min(100,state.rep.social+1);log(`<span class="time">${state.time}</span> Montrose talks with <b>${t.name}</b>. They exchange gossip and quietly compare the house's threat levels.`)}
+ if(type==="pull"){t=chooseTarget("Who do you want to pull aside?");if(!t)return;change(t.name,6);trust(t.name,4);log(`<span class="time">${state.time}</span> Montrose pulls <b>${t.name}</b> aside. The conversation feels more serious than a normal chat.`)}
+ if(type==="eavesdrop"){let a=random(others()),b=random(others().filter(x=>x.name!==a.name));log(`<span class="social">Live Feed</span> Montrose overhears <b>${a.name}</b> talking privately with <b>${b.name}</b>. You catch: “Montrose is going to be a problem eventually.”`);state.known.push(`${a.name} was overheard discussing Montrose with ${b.name}.`)}
+ if(type==="diary"){log(`<span class="time">${state.time}</span> <b>Diary Room:</b> Big Brother asks Montrose whether he trusts his boyfriend completely. The answer stays private.`,"system");state.rep.strategic=Math.min(100,state.rep.strategic+1)}
+ if(type==="romance"){change("Marcus",5);trust("Marcus",3);state.rep.social=Math.min(100,state.rep.social+1);log(`<span class="time">${state.time}</span> Montrose spends time with his boyfriend. The couple's closeness is becoming a major part of the house dynamic.`)}
+ if(type==="deal"){t=chooseTarget("Who do you want to offer a Final Two deal to?");if(!t)return;change(t.name,7);trust(t.name,5);state.alliances.push(`Final Two: Montrose + ${t.name}`);state.known.push(`You offered ${t.name} a Final Two deal.`);log(`<span class="time">${state.time}</span> Montrose offers <b>${t.name}</b> a quiet Final Two deal. They say they need time to think.`)}
+ if(type==="rumour"){t=chooseTarget("Who do you want to spread a rumour about?");if(!t)return;change(t.name,-5);state.rep.trustworthy=Math.max(0,state.rep.trustworthy-3);log(`<span class="time">${state.time}</span> Montrose spreads a rumour about <b>${t.name}</b>. It reaches at least two other people before the hour is over.`)}
+ if(type==="house"){let activity=random(["a pool tournament","a cooking task","a karaoke session","a garden game","a quiz night"]);t=random(others());change(t.name,3);log(`<span class="time">${state.time}</span> The house plays <b>${activity}</b>. Montrose and ${t.name} end up laughing together.`)}
+ if(type==="rest"){log(`<span class="time">${state.time}</span> Montrose keeps to himself. While he is away from the main group, other housemates make their own plans.`)}
+ if(type==="power"){usePower()}
+ advanceTime();
+}
+function usePower(){
+ const available=state.powers.filter(x=>!state.usedPowers.includes(x));
+ if(!available.length){log(`<span class="system">POWER</span> Montrose has no unused powers.`,"system");return}
+ const p=available[0];
+ if(p==="Secret Veto"){state.usedPowers.push(p);state.vetoHolder="Montrose";log(`<span class="system">SECRET VETO</span> Montrose secretly claims the Secret Veto. Its existence is not announced to the house.`,"system")}
+}
+function advanceTime(){
+ const phases=["Morning","Afternoon","Evening"];
+ const idx=phases.indexOf(state.time);
+ if(idx<2){state.time=phases[idx+1];aiMove();render();return}
+ endDay();
+}
+function aiMove(){
+ if(Math.random()<.8){
+  let a=random(others()),b=random(others().filter(x=>x.name!==a.name));
+  let positive=Math.random()>.42;change(a.name,positive?2:-3);trust(a.name,positive?1:-2);
+  log(`<span class="social">Live Feed</span> While Montrose wasn't involved, <b>${a.name}</b> and <b>${b.name}</b> have a private strategy conversation.`,"social");
+ }
+}
+function endDay(){
+ const closedDay=state.day;
+ state.viewers=Math.max(2,Math.min(8.5,state.viewers+(Math.random()*.18-.03)));
+
+ // The nightly wrap-up always happens BEFORE the new day begins.
+ log(`<span class="system">🌙 END OF DAY</span> Day ${closedDay} closes. The house settles for the night.`,"system");
+ runLateAndLive(closedDay);
+ runSocialMedia(closedDay);
+
+ // Overnight reset / next day.
+ state.day=closedDay+1;
+ state.time="Morning";
+ if(state.day%4===1)runHoH();
+ if(state.day%5===1)runShopping();
+ render();
+}
+function runLateAndLive(day){
+ const live=others();
+ const featured=live.length?random(live):null;
+ const clips=[
+   "a funny moment from the house",
+   "a tense private conversation",
+   "a Diary Room reaction",
+   "a relationship moment",
+   "a strategic conversation that viewers are debating"
+ ];
+ const clip=random(clips);
+ log(`<span class="social">📺 LATE & LIVE — DAY ${day}</span> Viewer count: <b>${state.viewers.toFixed(2)}m</b>. Tonight's show features ${clip}.`,"social");
+ if(featured){
+   log(`<span class="social">LATE & LIVE</span> The panel discusses <b>${featured.name}</b>'s position in the house and replays one of their biggest moments from today.`,"social");
+ }
+ log(`<span class="social">LATE & LIVE</span> The presenters tease tomorrow's episode: alliances, nominations and unfinished conversations are still developing.`,"social");
+}
+function runSocialMedia(day){
+ const live=others();
+ if(!live.length)return;
+ const favourite=random(live);
+ const entertaining=random(live);
+ const dangerous=random(live);
+ const target=random(live);
+ const reactions=[
+   `“${favourite.name} is getting a lot of support tonight.”`,
+   `“${entertaining.name} is providing the entertainment again.”`,
+   `“People are trying to work out whether ${dangerous.name} is playing a bigger game than they realise.”`,
+   `“The ${target.name} conversation is all over the timeline tonight.”`
+ ];
+ log(`<span class="social">📱 SOCIAL MEDIA — DAY ${day}</span>`, "social");
+ log(`<span class="social">PUBLIC POLLS</span> Favourite: <b>${favourite.name}</b> • Most entertaining: <b>${entertaining.name}</b> • Most likely to betray: <b>${dangerous.name}</b>.`,"social");
+ log(`<span class="social">TIMELINE</span> ${random(reactions)}`,"social");
+ log(`<span class="social">TRENDING</span> Fans are debating tonight's house dynamics, with support and criticism split across several housemates.`,"social");
+ state.polls.favourite=favourite.name;
+ state.polls.entertaining=entertaining.name;
+ state.polls.dangerous=dangerous.name;
+}
+function runHoH(){
+ let live=others();if(!live.length)return;
+ let winner=random(live);state.hoh=winner.name;state.nominees=[];state.nominationsDone=false;
+ log(`<span class="system">👑 HOH</span> <b>${winner.name}</b> wins the Head of House competition.`, "system");
+ nominate();
+}
+function nominate(){
+ if(!state.hoh)return;
+ const eligible=others().filter(p=>p.name!==state.hoh);
+ const ranked=[...eligible].sort((a,b)=>(state.relationships[a.name]-state.trust[a.name])-(state.relationships[b.name]-state.trust[b.name]));
+ let n1=ranked[0],n2=ranked[1];
+ // A high-threat HoH can make a strategic shot rather than simply choosing low relationships.
+ if(Math.random()<.5)n1=[...eligible].sort((a,b)=>b.threat-a.threat)[0];
+ if(n2.name===n1.name)n2=ranked.find(x=>x.name!==n1.name);
+ state.nominees=[n1.name,n2.name];state.nominationsDone=true;
+ log(`<span class="system">🟥 NOMINATIONS</span> ${state.hoh} nominates <b>${n1.name}</b> and <b>${n2.name}</b>.`, "system");
+}
+function runSocialPulse(){
+ const live=others();if(!live.length)return;
+ let target=[...live].sort((a,b)=>b.threat-a.threat)[0];
+ state.known.push(`House consensus is increasingly that ${target.name} is a major strategic threat.`);
+ log(`<span class="social">PUBLIC POLL</span> “Most likely to betray” is currently <b>${state.polls.dangerous}</b>. “Most entertaining” is <b>${state.polls.entertaining}</b>.`,"social");
+}
+function runShopping(){
+ const levels=["GREEN","GREEN","YELLOW","GREEN","RED"];state.shopping=random(levels);
+ log(`<span class="system">🛒 SHOPPING TASK</span> The house receives a <b>${state.shopping}</b> budget this week.`,"system");
+}
+function saveGame(){localStorage.bbAllStars=JSON.stringify(state);log(`<span class="system">💾 SAVED</span> Your season has been saved in this browser.`,"system")}
+function loadGame(){if(localStorage.bbAllStars){state=JSON.parse(localStorage.bbAllStars);render();log(`<span class="system">↩️ LOADED</span> Saved season restored.`,"system")}else log(`<span class="system">No saved season found.</span>`,"system")}
+function newGame(){if(confirm("Start a completely new All Stars season?")){localStorage.removeItem("bbAllStars");state=fresh();cast.forEach(p=>{if(!p.you){state.relationships[p.name]=p.rel;state.trust[p.name]=p.trust}});boot()}}
+
+let currentAction=null;
+const actionMeta={
+ talk:["💬 Talk","Choose a housemate to have a conversation with."],
+ pull:["🤫 Pull someone aside","Choose someone for a private conversation."],
+ eavesdrop:["🕵️ Eavesdrop","Choose where you want to listen in."],
+ diary:["🎥 Diary Room","Enter the Diary Room and answer Big Brother's question."],
+ romance:["💕 Romance","Spend private time with your boyfriend."],
+ deal:["🤝 Make a deal","Choose someone to approach about an alliance or Final Two."],
+ rumour:["🗣️ Spread a rumour","Choose who the rumour is about."],
+ house:["🎲 House activity","Choose an activity and join the house."],
+ rest:["😴 Keep to yourself","Take some time away from the group."],
+ power:["⚡ Check / use power","See what powers Montrose currently has."]
+};
+
+
+const officialCasts={
+ "2025":[
+  "Teja","Sam","Cameron","Caroline","Elsa","Emily","Gani","Jenny","Marcus","Nancy","Tate","Zelah","Cameron B","Feyisola","George","Richard","Farida"
+ ],
+ "2024":[
+  "Baked Potato","Emma","Segun","Nathan","Daze","Khaled","Martha","Lily","Ali","Thomas","Ryan","Hanah","Izaaz","Sarah","Marcello","Dean"
+ ],
+ "2023":[
+  "Jenkin","Farida","Tom","Hallie","Trish","Yinrun","Jordan","Zak","Chanelle","Dylan","Noky","Matty","Paul","Henry","Olivia","Kerry"
+ ]
+};
+let customSeason="2025";
+let selectedCustom=[];
+
+function openCustomCast(){
+ const body=document.getElementById("custom-cast-body");
+ body.innerHTML=`<div class="section-title">Choose a series</div>
+ <div class="custom-season-grid">
+  <button class="season-card" onclick="pickCustomSeason('2025')"><div class="year">2025</div><div class="count">${officialCasts["2025"].length} housemates</div><div class="count">Latest UK civilian series</div></button>
+  <button class="season-card" onclick="pickCustomSeason('2024')"><div class="year">2024</div><div class="count">${officialCasts["2024"].length} housemates</div><div class="count">UK civilian series</div></button>
+  <button class="season-card" onclick="pickCustomSeason('2023')"><div class="year">2023</div><div class="count">${officialCasts["2023"].length} housemates</div><div class="count">UK reboot launch series</div></button>
+ </div>
+ <div id="custom-picker" style="margin-top:18px"></div>`;
+ showScreen("custom");
+ pickCustomSeason("2025");
+}
+function pickCustomSeason(year){
+ customSeason=year;
+ selectedCustom=[...officialCasts[year]];
+ const picker=document.getElementById("custom-picker");
+ if(!picker)return;
+ picker.innerHTML=`<div class="section-title">Choose your housemates from Big Brother UK ${year}</div>
+ <div class="cast-select">${officialCasts[year].map(n=>`<label class="cast-option selected"><input type="checkbox" checked onchange="toggleCustom('${n.replace(/'/g,"\\'")}',this.checked)"> ${n}</label>`).join("")}</div>
+ <div class="choice-row"><button onclick="startCustomSeason()">🏠 Start with this cast</button><button onclick="selectAllCustom(true)">Select all</button><button onclick="selectAllCustom(false)">Clear all</button></div>`;
+}
+function toggleCustom(name,on){
+ if(on&&!selectedCustom.includes(name))selectedCustom.push(name);
+ if(!on)selectedCustom=selectedCustom.filter(x=>x!==name);
+ const inputs=[...document.querySelectorAll("#custom-picker input")];
+ inputs.forEach(inp=>{
+   const card=inp.closest(".cast-option");
+   if(card)card.classList.toggle("selected",inp.checked);
+ });
+}
+function selectAllCustom(on){
+ selectedCustom=on?[...officialCasts[customSeason]]:[];
+ const inputs=[...document.querySelectorAll("#custom-picker input")];
+ inputs.forEach(inp=>{
+   inp.checked=on;
+   const card=inp.closest(".cast-option");
+   if(card)card.classList.toggle("selected",on);
+ });
+}
+function startCustomSeason(){
+ if(selectedCustom.length<2){alert("Choose at least 2 housemates.");return;}
+ const keep=cast.find(x=>x.you);
+ const boyfriend=cast.find(x=>x.name==="Marcus");
+ const chosen=selectedCustom.map((name,i)=>({
+   name,age:25,role:`Big Brother UK ${customSeason}`,you:false,rel:50,trust:45,threat:55
+ }));
+ cast=[keep, ...(boyfriend?[boyfriend]:[]), ...chosen.filter(x=>x.name!=="Marcus"&&x.name!=="Montrose")];
+ state=fresh();
+ cast.forEach(p=>{if(!p.you){state.relationships[p.name]=p.rel;state.trust[p.name]=p.trust}});
+ state.known=[`Custom cast: Big Brother UK ${customSeason}.`,`Montrose is the playable housemate.`,`Housemates selected: ${selectedCustom.join(", ")}.`];
+ state.log=[];
+ boot();
+ showScreen("home");
+}
+function showScreen(name){
+ document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+ const el=document.getElementById("screen-"+name);
+ if(el)el.classList.add("active");
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+function openLiveFeedScreen(){
+  renderLog();
+  showScreen("livefeed");
+}
+function openAction(type){
+ currentAction=type;
+ const meta=actionMeta[type];
+ document.getElementById("action-title").textContent=meta[0];
+ document.getElementById("action-subtitle").textContent=meta[1];
+ const body=document.getElementById("action-body");
+ const live=others();
+
+ if(type==="diary"){
+   body.innerHTML=`<div class="result-text"><b>Big Brother:</b> “Montrose, how are you feeling about the house right now?”</div>
+   <div style="margin-top:12px"><textarea id="player-text" placeholder="Type exactly what Montrose says..." style="width:100%;min-height:130px;background:#0d0d15;color:#fff;border:1px solid #34344c;border-radius:12px;padding:12px;font:inherit;resize:vertical"></textarea></div>
+   <button type="button" class="send-action" onclick="sendPlayerAction('diary','')">Send to Diary Room →</button>`;
+ } else if(type==="romance"){
+   body.innerHTML=`<div class="result-text"><b>Montrose's boyfriend is nearby.</b><br>What does Montrose do?</div>
+   <div class="choice-row">
+    <button onclick="submitCustomAction('romance','Cuddle with him and talk privately.')">💕 Cuddle and talk</button>
+    <button onclick="submitCustomAction('romance','Flirt with him and make him laugh.')">😘 Flirt</button>
+    <button onclick="submitCustomAction('romance','Ask him what he thinks about the house.')">🗣️ Talk strategy</button>
+    <button onclick="submitCustomAction('romance','Give him some space.')">😌 Give him space</button>
+   </div>
+   <div style="margin-top:15px"><textarea id="player-text" placeholder="Or type exactly what Montrose does/says..." style="width:100%;min-height:100px;background:#0d0d15;color:#fff;border:1px solid #34344c;border-radius:12px;padding:12px;font:inherit;resize:vertical"></textarea></div>
+   <button type="button" class="send-action" onclick="sendPlayerAction('romance','Marcus')">Send what Montrose does/says →</button>`;
+ } else if(type==="power"){
+   const available=state.powers.filter(x=>!state.usedPowers.includes(x));
+   body.innerHTML=`<div class="result-text"><b>Montrose's available powers:</b><br>${available.length?available.join(", "):"None"}</div>
+   <div class="choice-row">${available.map(p=>`<button onclick="submitCustomAction('power','${p}')">⚡ ${p}</button>`).join("")||"<button onclick=\"showScreen('home')\">Back to house</button>"}</div>`;
+ } else if(type==="rest"){
+   body.innerHTML=`<div class="result-text">Montrose has some time alone. What does he do?</div>
+   <div class="choice-row">
+    <button onclick="submitCustomAction('rest','Sit quietly and observe the house.')">👀 Observe</button>
+    <button onclick="submitCustomAction('rest','Go to the bedroom and rest.')">😴 Rest</button>
+    <button onclick="submitCustomAction('rest','Go outside and clear my head.')">🌳 Go outside</button>
+   </div>
+   <div style="margin-top:15px"><textarea id="player-text" placeholder="Or type exactly what Montrose does..." style="width:100%;min-height:100px;background:#0d0d15;color:#fff;border:1px solid #34344c;border-radius:12px;padding:12px;font:inherit;resize:vertical"></textarea></div>
+   <button type="button" class="send-action" onclick="sendPlayerAction('rest','')">Send what Montrose does →</button>`;
+ } else if(type==="eavesdrop"){
+   body.innerHTML=`<div class="section-title">Where does Montrose listen?</div><div class="target-grid">
+    ${["Kitchen","Bedroom","Garden","Living Room"].map(a=>`<button class="target-card" onclick="chooseEavesdrop('${a}')">🕵️ ${a}<span class="mini">Try to hear what people are saying.</span></button>`).join("")}
+   </div>`;
+ } else if(type==="house"){
+   const acts=["Pool tournament","Cooking task","Karaoke session","Garden game","Quiz night"];
+   body.innerHTML=`<div class="section-title">Choose an activity</div><div class="target-grid">${acts.map(a=>`<button class="target-card" onclick="chooseHouseActivity('${a}')">🎲 ${a}<span class="mini">Then decide exactly what Montrose does.</span></button>`).join("")}</div>`;
+ } else {
+   body.innerHTML=`<div class="section-title">First choose who Montrose interacts with</div><div class="target-grid">${live.map(p=>`<button class="target-card" onclick="chooseTargetAction('${type}','${p.name}')"><b>${p.name}</b><span class="mini">${p.role}</span></button>`).join("")}</div>`;
+ }
+ showScreen("action");
+}
+function chooseTargetAction(type,name){
+ const promptMap={
+  talk:`Talk to ${name}`,
+  pull:`Pull ${name} aside`,
+  deal:`Make a deal with ${name}`,
+  rumour:`Spread a rumour about ${name}`
+ };
+ const presets={
+  talk:[
+   "How are you actually feeling about the house?",
+   "I trust you more than most people here.",
+   "Who do you think is playing the biggest game?",
+   "I don't want to make a big move yet."
+  ],
+  pull:[
+   "I wanted to talk privately because I don't know who I can trust.",
+   "Are we actually working together?",
+   "I think someone is coming for us.",
+   "I want to make sure we're good before nominations."
+  ],
+  deal:[
+   "Let's work together and keep each other safe.",
+   "I want us to be a final two.",
+   "If you're HoH, don't put me up and I'll remember it.",
+   "Let's share information but keep this between us."
+  ],
+  rumour:[
+   `${name} might be closer to another group than they're admitting.`,
+   `I heard ${name} has been talking about who to nominate.`,
+   `I don't fully trust ${name}.`,
+   `I'm not saying it's true, but I've heard something about ${name}.`
+  ]
+ };
+ document.getElementById("action-body").innerHTML=`
+  <div class="result-text"><b>${name}</b> is with Montrose.</div>
+  <div class="preset-label">Choose how Montrose opens the conversation:</div>
+  <div class="preset-grid" id="preset-grid">
+   ${presets[type].map((x,i)=>`<button type="button" class="preset-btn conversation-start" data-preset="${esc(x)}">${["💬","🤫","🧠","🔥"][i]} ${esc(x)}</button>`).join("")}
+  </div>
+  <div class="preset-label">Or write exactly what Montrose says:</div>
+  <textarea id="player-text" placeholder="Type Montrose's opening line..." style="width:100%;min-height:120px;background:#0d0d15;color:#fff;border:1px solid #34344c;border-radius:12px;padding:12px;font:inherit;resize:vertical"></textarea>
+  <button type="button" class="send-action" id="send-chat-btn">Start conversation →</button>`;
+ const textarea=document.getElementById("player-text");
+ document.querySelectorAll("#preset-grid .conversation-start").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+   startConversation(type,name,btn.dataset.preset||"");
+  });
+ });
+ document.getElementById("send-chat-btn").addEventListener("click",()=>{
+  const text=textarea.value.trim();
+  if(text) startConversation(type,name,text);
+  else {textarea.focus();textarea.placeholder="Choose an option above or type Montrose's opening line."; }
+ });
+}
+
+function conversationResponse(name,type,playerText){
+ const responses={
+  talk:[
+   `${name} nods. “Yeah, I’m still figuring everyone out. I’ve definitely got a few people I’m watching.”`,
+   `${name} says, “Honestly? I’m trying not to get dragged into anything too early, but I’m glad you asked.”`,
+   `${name} laughs. “You know this house better than most of us. I’m interested in where your head is too.”`
+  ],
+  pull:[
+   `${name} lowers their voice. “Okay, between us? I’m not completely sure who I trust yet.”`,
+   `${name} says, “I was actually hoping we’d have this conversation. I don’t want to be on opposite sides.”`,
+   `${name} pauses. “I’ll keep this between us for now, but I need to see what happens next.”`
+  ],
+  deal:[
+   `${name} looks at Montrose for a moment. “I could work with that. But if we do this, it stays between us.”`,
+   `${name} says, “I’m not promising anything permanent, but I’m willing to keep you close.”`,
+   `${name} smiles. “That could work. Just remember I’m playing for myself too.”`
+  ],
+  rumour:[
+   `${name} looks surprised. “Really? I hadn’t heard that.” They clearly file it away.`,
+   `${name} asks, “Who told you that?” They seem interested, but not completely convinced.`,
+   `${name} says, “I’ll keep that in mind.” The conversation moves on, but the information may travel.`
+  ]
+ };
+ return random(responses[type]||responses.talk);
+}
+
+function startConversation(type,name,opening){
+ state.currentConversation={type,name,turn:0,opening};
+ document.getElementById("conversation-title").textContent=promptForConversation(type,name);
+ document.getElementById("conversation-subtitle").textContent=`${state.time} • Day ${state.day}`;
+ document.getElementById("conversation-thread").innerHTML="";
+ document.getElementById("conversation-choice-area").innerHTML="";
+ document.getElementById("conversation-flow").innerHTML="";
+ addChatBubble("me","Montrose",opening);
+ showScreen("conversation");
+ setTimeout(()=>continueConversationAfterOpening(),450);
+}
+
+function promptForConversation(type,name){
+ if(type==="pull") return `Montrose pulls ${name} aside`;
+ if(type==="deal") return `Montrose makes a deal with ${name}`;
+ if(type==="rumour") return `Montrose talks about ${name}`;
+ return `Montrose talks with ${name}`;
+}
+
+function addChatBubble(who,name,text){
+ const thread=document.getElementById("conversation-thread");
+ if(!thread)return;
+ const row=document.createElement("div");
+ row.className=`chat-row ${who==="me"?"me":"them"}`;
+ row.innerHTML=`<div class="chat-bubble ${who==="me"?"me":"them"}"><div class="chat-name">${esc(name)}</div><div>${esc(text)}</div><div class="chat-time">${esc(state.time)}</div></div>`;
+ thread.appendChild(row);
+ thread.scrollTop=thread.scrollHeight;
+}
+
+function continueConversationAfterOpening(){
+ const c=state.currentConversation;
+ if(!c)return;
+ const response=conversationResponse(c.name,c.type,c.opening);
+ addChatBubble("them",c.name,response);
+ c.turn=1;
+ showNextConversationChoices();
+}
+
+function showNextConversationChoices(){
+ const c=state.currentConversation;
+ const area=document.getElementById("conversation-choice-area");
+ const flow=document.getElementById("conversation-flow");
+ const choices=[
+  "I agree. I feel pretty much the same.",
+  "Who do you actually trust in this house?",
+  "Who do you think is a target right now?",
+  "I’m keeping my cards close to my chest for now."
+ ];
+ area.innerHTML=`<div class="choice-heading">What does Montrose say next?</div>`+
+  choices.map((x,i)=>`<button type="button" class="conversation-choice" data-reply="${esc(x)}">${["💬","👀","🎯","🤐"][i]} ${esc(x)}</button>`).join("")+
+  `<button type="button" class="conversation-choice custom" id="custom-conversation-reply">✍️ Write exactly what Montrose says</button>`;
+ area.querySelectorAll("[data-reply]").forEach(btn=>btn.addEventListener("click",()=>sendConversationReply(btn.dataset.reply)));
+ document.getElementById("custom-conversation-reply").addEventListener("click",()=>{
+  area.innerHTML=`<div class="choice-heading">Montrose's reply</div>
+   <textarea id="conversation-custom" placeholder="Type exactly what Montrose says..." style="width:100%;min-height:110px;background:#0d0d15;color:#fff;border:1px solid #34344c;border-radius:12px;padding:12px;font:inherit"></textarea>
+   <button type="button" class="send-action" id="conversation-custom-send">Say it →</button>`;
+  document.getElementById("conversation-custom-send").addEventListener("click",()=>{
+   const v=document.getElementById("conversation-custom").value.trim();
+   if(v)sendConversationReply(v);
+  });
+ });
+ flow.innerHTML="";
+}
+
+function sendConversationReply(text){
+ const c=state.currentConversation;
+ if(!c)return;
+ c.lastReply=text;
+ addChatBubble("me","Montrose",text);
+ c.turn++;
+ setTimeout(()=>{
+  const response=conversationResponse(c.name,c.type,text);
+  addChatBubble("them",c.name,response);
+  c.turn++;
+  finishConversation();
+ },450);
+}
+
+function finishConversation(){
+ const c=state.currentConversation;
+ if(!c)return;
+
+ const relationshipDelta=c.type==="rumour"?-3:(c.type==="deal"?6:(c.type==="pull"?5:3));
+ const trustDelta=c.type==="rumour"?-2:(c.type==="deal"?4:(c.type==="pull"?3:2));
+ change(c.name,relationshipDelta);
+ trust(c.name,trustDelta);
+
+ if(c.type==="deal"){
+   state.alliances=state.alliances||[];
+   if(!state.alliances.includes(`Deal: Montrose + ${c.name}`))
+     state.alliances.push(`Deal: Montrose + ${c.name}`);
+ }
+ if(c.type==="rumour")state.rep.trustworthy=Math.max(0,state.rep.trustworthy-2);
+ else state.rep.social=Math.min(100,state.rep.social+1);
+
+ const minutes=30+Math.floor(Math.random()*61);
+ advanceTimeByMinutes(minutes);
+
+ const houseUpdate=random([
+   "Across the house, two other All Stars start talking about who they trust.",
+   "Someone in the kitchen starts discussing the first nominations.",
+   "A small group gathers in the lounge and the mood shifts.",
+   "Another pair of housemates have a private conversation without Montrose.",
+   "The house settles into a new rhythm as people compare notes."
+ ]);
+
+ log(`<span class="time">${state.time}</span> House update: Montrose's conversation with ${esc(c.name)} ends. ${esc(c.name)} heads back into the house.`);
+ log(`<span class="social">${state.time}</span> ${houseUpdate}`);
+
+ const title=document.getElementById("houseupdate-title");
+ const sub=document.getElementById("houseupdate-subtitle");
+ const main=document.getElementById("houseupdate-main");
+ const conv=document.getElementById("houseupdate-conversation");
+ const changes=document.getElementById("houseupdate-changes");
+ const house=document.getElementById("houseupdate-house");
+
+ if(title)title.textContent=`After talking to ${c.name}`;
+ if(sub)sub.textContent=`⏩ ${minutes} minutes later • ${state.time}`;
+ if(main)main.innerHTML=`<div class="house-update-line"><b>${esc(c.name)}</b> leaves the conversation with a changed view of Montrose. The rest of the house keeps moving while Montrose's conversation is processed.</div>`;
+
+ if(conv)conv.innerHTML=`
+   <div class="house-update-line"><b>Montrose:</b> “${esc(c.opening)}”</div>
+   <div class="house-update-line"><b>${esc(c.name)}:</b> “${esc(conversationResponse(c.name,c.type,c.opening))}”</div>
+   <div class="house-update-line"><b>Montrose:</b> “${esc(c.lastReply||"I agree. I feel pretty much the same.")}”</div>`;
+
+ if(changes)changes.innerHTML=`
+   <div class="house-update-effect"><span>Relationship with ${esc(c.name)}</span><span class="${relationshipDelta>=0?'positive':'negative'}">${relationshipDelta>=0?'+':''}${relationshipDelta}</span></div>
+   <div class="house-update-effect"><span>Trust with ${esc(c.name)}</span><span class="${trustDelta>=0?'positive':'negative'}">${trustDelta>=0?'+':''}${trustDelta}</span></div>
+   <div class="house-update-effect"><span>Montrose social reputation</span><span class="positive">+1</span></div>`;
+
+ if(house)house.innerHTML=`
+   <div class="house-update-line">⏩ ${houseUpdate}</div>
+   <div class="house-update-line">👀 Other housemates continue their own conversations and strategy without Montrose.</div>`;
+
+ document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));
+ const updateScreen=document.getElementById("screen-houseupdate");
+ if(updateScreen)updateScreen.classList.add("active");
+
+ const continueBtn=document.getElementById("houseupdate-continue");
+ if(continueBtn){
+   continueBtn.onclick=()=>{
+     state.currentConversation=null;
+     document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));
+     const home=document.getElementById("screen-home");
+     if(home)home.classList.add("active");
+     try{render();}catch(e){console.error(e);}
+   };
+ }
+}
+function advanceTimeByMinutes(minutes){
+ const order=["Morning","Afternoon","Evening","Night"];
+ let idx=order.indexOf(state.time);
+ if(idx<0)idx=0;
+ let steps=Math.max(1,Math.round(minutes/60));
+ for(let i=0;i<steps;i++){
+   idx++;
+   if(idx>=order.length){state.day++;idx=0;}
+   state.time=order[idx];
+   maybeAnnounceNaturalEvent();
+ }
+}
+
+function sendPlayerAction(type,target){
+ const el=document.getElementById("player-text");
+ const text=el ? el.value.trim() : "";
+ if(!text){
+   if(el){el.focus();el.placeholder="Write something first, or choose a quick option above.";}
+   return;
+ }
+ if(type==="eavesdrop" || type==="house") performAction(type,text,target);
+ else if(type==="romance") performAction(type,text,"Marcus");
+ else performAction(type,text,target);
+}
+function chooseEavesdrop(place){
+ document.getElementById("action-body").innerHTML=`<div class="result-text"><b>Montrose is in the ${place}.</b><br><br>What does he do while trying to listen?</div>
+ <div class="choice-row"><button onclick="submitCustomAction('eavesdrop','Stay hidden and listen.','${place}')">🕵️ Stay hidden</button><button onclick="submitCustomAction('eavesdrop','Pretend to be doing something else while listening.','${place}')">😏 Act casual</button></div>
+ <div style="margin-top:15px"><textarea id="player-text" placeholder="Or type exactly what Montrose does..." style="width:100%;min-height:100px;background:#0d0d15;color:#fff;border:1px solid #34344c;border-radius:12px;padding:12px;font:inherit;resize:vertical"></textarea></div>
+ <button type="button" class="send-action" onclick="sendPlayerAction('eavesdrop','${place}')">Send what Montrose does →</button>`;
+}
+function chooseHouseActivity(activity){
+ document.getElementById("action-body").innerHTML=`<div class="result-text"><b>${activity}</b> is happening in the house.<br><br>What does Montrose do?</div>
+ <div style="margin-top:12px"><textarea id="player-text" placeholder="Type exactly what Montrose does or says..." style="width:100%;min-height:140px;background:#0d0d15;color:#fff;border:1px solid #34344c;border-radius:12px;padding:12px;font:inherit;resize:vertical"></textarea></div>
+ <button type="button" class="send-action" onclick="sendPlayerAction('house','${activity}')">Send what Montrose does →</button>`;
+}
+function openLastAction(){if(currentAction)openAction(currentAction);else showScreen("home")}
+function submitCustomAction(type,preset="",target=""){
+ const el=document.getElementById("player-text");
+ const custom=el?el.value.trim():"";
+ performAction(type,custom||preset,target);
+}
+function performAction(type,actionText="",target=""){
+ let t=target;
+ const beforeRel=(t&&state.relationships[t]!=null)?state.relationships[t]:null;
+ const beforeTrust=(t&&state.trust[t]!=null)?state.trust[t]:null;
+ let consequence=[];
+ let otherReaction="";
+
+ if(type==="talk"){
+   change(t,4);trust(t,2);state.rep.social=Math.min(100,state.rep.social+1);
+   consequence.push(`${t}'s relationship with Montrose improved.`);
+   consequence.push(`${t}'s trust increased slightly.`);
+   log(`<span class="time">${state.time}</span> Montrose talks with <b>${t}</b>: “${esc(actionText)}”`);
+   otherReaction=`${t} listens and gives Montrose their own perspective on the house.`;
+ }
+ if(type==="pull"){
+   change(t,6);trust(t,4);
+   consequence.push(`${t} now feels closer to Montrose.`);
+   consequence.push(`${t}'s trust increased noticeably.`);
+   log(`<span class="time">${state.time}</span> Montrose pulls <b>${t}</b> aside: “${esc(actionText)}”`);
+   otherReaction=`The private conversation makes ${t} think more seriously about working with Montrose.`;
+ }
+ if(type==="deal"){
+   change(t,7);trust(t,5);
+   state.alliances.push(`Deal: Montrose + ${t}`);
+   state.known.push(`You made a deal with ${t}.`);
+   consequence.push(`A private deal with ${t} is now recorded.`);
+   consequence.push(`${t}'s trust increased.`);
+   log(`<span class="time">${state.time}</span> Montrose pulls <b>${t}</b> aside: “${esc(actionText)}”`);
+   otherReaction=`${t} keeps the deal private for now, but may act on it later.`;
+ }
+ if(type==="rumour"){
+   change(t,-5);state.rep.trustworthy=Math.max(0,state.rep.trustworthy-3);
+   consequence.push(`${t}'s relationship with Montrose worsened.`);
+   consequence.push(`Montrose's trustworthiness reputation dipped slightly.`);
+   log(`<span class="time">${state.time}</span> Montrose tells people about <b>${t}</b>: “${esc(actionText)}”`);
+   otherReaction=`The rumour may travel through the house. ${t} does not know exactly where it came from yet.`;
+ }
+ if(type==="eavesdrop"){
+   let a=others()[0]||{name:"other housemates"}, b=others().find(x=>x.name!==a.name)||a;
+   state.known.push(`${a.name} was overheard talking with ${b.name} in the ${target}.`);
+   consequence.push(`Montrose gained information about ${a.name} and ${b.name}.`);
+   log(`<span class="social">Live Feed</span> Montrose tries to eavesdrop in the <b>${esc(target)}</b>. He ${esc(actionText||"listens carefully")}. He overhears <b>${a.name}</b> talking with <b>${b.name}</b>, but only catches part of the conversation.`);
+   otherReaction=`Montrose gets a partial piece of information rather than the full conversation.`;
+ }
+ if(type==="diary"){
+   state.rep.strategic=Math.min(100,state.rep.strategic+1);
+   consequence.push(`Big Brother has recorded Montrose's perspective.`);
+   log(`<span class="time">${state.time}</span> <b>Diary Room:</b> Montrose says: “${esc(actionText)}”`,"system");
+ }
+ if(type==="romance"){
+   change("Marcus",5);trust("Marcus",3);state.rep.social=Math.min(100,state.rep.social+1);
+   consequence.push(`Marcus feels closer to Montrose.`);
+   consequence.push(`Their trust improved.`);
+   log(`<span class="time">${state.time}</span> Montrose and Marcus spend private time together. Montrose: “${esc(actionText)}”`);
+   otherReaction=`Marcus responds to Montrose privately; the rest of the house does not automatically know what was said.`;
+ }
+ if(type==="house"){
+   let activity=target, person=others()[0];
+   if(person) change(person.name,3);
+   consequence.push(`The house activity changed the mood around Montrose.`);
+   log(`<span class="time">${state.time}</span> During <b>${esc(activity)}</b>, Montrose: “${esc(actionText)}”`);
+   otherReaction=`Other housemates continue the activity independently.`;
+ }
+ if(type==="rest"){
+   consequence.push(`Montrose kept a low profile and did not make a major social move.`);
+   log(`<span class="time">${state.time}</span> Montrose chooses to ${esc(actionText||"keep to himself")}.`);
+ }
+ if(type==="power"){usePower();consequence.push("Montrose used an available power.");}
+
+ advanceTime();
+
+ document.getElementById("result-kicker").textContent=
+   type==="diary"?"DIARY ROOM":type==="romance"?"PRIVATE MOMENT":"CONVERSATION";
+ document.getElementById("result-title").textContent=
+   type==="talk"||type==="pull"||type==="deal"||type==="rumour"
+   ?`Montrose spoke with ${esc(t)}`
+   :"Montrose made his move";
+
+ let changes=consequence.length?consequence.map(x=>`<li>${x}</li>`).join(""):"<li>No major measurable change.</li>";
+ document.getElementById("result-text").innerHTML=`
+   <div class="conversation-result">
+     <div class="result-label">WHAT MONTROSE SAID / DID</div>
+     <blockquote>“${esc(actionText||actionMeta[type][0])}”</blockquote>
+     ${otherReaction?`<div class="result-label">WHAT HAPPENED</div><p>${otherReaction}</p>`:""}
+     <div class="result-label">WHAT CHANGED</div>
+     <ul>${changes}</ul>
+   </div>`;
+ showScreen("result");render();
+}
+function boot(){
+ log(`<span class="system">DAY 1 — ALL STARS</span> Twelve All Stars enter the house. Everyone knows Montrose and his boyfriend are together — and both have already won before.`,"system");
+ log(`<span class="time">Morning</span> The first conversations begin. No alliance is guaranteed. Every housemate has their own agenda.`,"");
+ render();
+}
+boot();
+</script>
+
+<script>
+function openMiniGame(){
+  // The player never selects the type of competition. Big Brother announces it.
+  openCompetitionHub();
+}
+
+function startPlayableGame(kind){
+ const area=document.getElementById("gameArea");
+ if(!area) return;
+ const title={hoh:"HoH Competition",veto:"Veto Competition",memory:"Memory",speed:"Speed",balance:"Balance",quiz:"Trivia",sequence:"Puzzle",finale:"Finale"}[kind];
+ area.innerHTML=`<div class="challenge-result"><h3>${title}</h3><div id="playArea"></div></div>`;
+ const g=document.getElementById("playArea");
+ const finish=(score,message)=>{
+   score=Math.max(0,Math.min(100,Number(score)||0));
+   const won=score>=70;
+   if(won){
+     if(kind==="hoh"){window.bbCompetition.hoh=true;window.bbCompetition.rewards.push("HoH room + nomination power");state.hoh="Montrose";}
+     if(kind==="veto"){window.bbCompetition.safety=true;window.bbCompetition.powers.push("Veto");state.vetoHolder="Montrose";state.veto="Montrose";}
+     if(kind==="finale") window.bbCompetition.rewards.push("Finale advantage");
+     if(kind==="memory") window.bbCompetition.powers.push("Extra Vote");
+     if(kind==="speed") window.bbCompetition.powers.push("Secret Veto");
+   }
+   window.bbCompetition.track.push({type:title,score,won});
+   g.innerHTML=`<h3>${won?"🏆 Montrose wins!":"💀 Montrose loses"}</h3><p>${message}</p><p><b>Score: ${Math.round(score)}/100</b></p>${won?`<div class="reward-box"><b>Reward</b><br>${kind==="hoh"?"👑 HoH and nomination control":kind==="veto"?"🟪 Veto power":"🎁 Competition advantage"}</div>`:""}<button type="button" class="comp-btn" id="gameDone">Continue</button>`;
+   document.getElementById("gameDone").addEventListener("click",()=>{
+     const screen=document.getElementById("miniGameScreen");
+     if(screen) screen.remove();
+     showScreen("home");
+     try{render();}catch(e){}
+   });
+ };
+ if(kind==="quiz"){
+   const q=[["How many days are in a week?",["5","7","9"],"7"],["How many minutes are in an hour?",["30","60","90"],"60"],["How many sides does a triangle have?",["3","4","5"],"3"]][Math.floor(Math.random()*3)];
+   g.innerHTML=`<p><b>${q[0]}</b></p><div class="game-grid">${q[1].map(x=>`<button type="button" class="game-btn quiz-choice">${x}</button>`).join("")}</div>`;
+   g.querySelectorAll(".quiz-choice").forEach(btn=>btn.addEventListener("click",()=>finish(btn.textContent===q[2]?100:0,btn.textContent===q[2]?"Correct!":"Wrong answer.")));
+ } else if(kind==="balance"){
+   g.innerHTML=`<p>Set the marker as close to 50 as possible.</p><input id="balanceRange" type="range" min="0" max="100" value="50" style="width:100%"><button type="button" class="comp-btn" id="lockBalance">Lock in</button>`;
+   document.getElementById("lockBalance").addEventListener("click",()=>{const v=Number(document.getElementById("balanceRange").value);finish(100-Math.abs(v-50)*2,"Your position was locked in.");});
+ } else if(kind==="memory"){
+   const seq=Array.from({length:7},()=>Math.floor(Math.random()*10)).join("");
+   g.innerHTML=`<p>Memorise this sequence. It disappears in 4 seconds.</p><h2 id="memorySeq">${seq.split("").join(" • ")}</h2><input id="memoryAnswer" inputmode="numeric" placeholder="Type the digits"><button type="button" class="comp-btn" id="memorySubmit">Submit</button>`;
+   setTimeout(()=>{const x=document.getElementById("memorySeq");if(x)x.textContent="??? • ??? • ??? • ???";},4000);
+   document.getElementById("memorySubmit").addEventListener("click",()=>finish(document.getElementById("memoryAnswer").value===seq?100:20,"Sequence checked."));
+ } else if(kind==="sequence"){
+   const a=2+Math.floor(Math.random()*8),b=2+Math.floor(Math.random()*8),ans=a*b;
+   g.innerHTML=`<p>Solve: <b>${a} × ${b} = ?</b></p><input id="puzzleAnswer" type="number"><button type="button" class="comp-btn" id="puzzleSubmit">Submit</button>`;
+   document.getElementById("puzzleSubmit").addEventListener("click",()=>finish(Number(document.getElementById("puzzleAnswer").value)===ans?100:0,Number(document.getElementById("puzzleAnswer").value)===ans?"Correct!":"Not quite."));
+ } else if(kind==="speed"){
+   g.innerHTML=`<p>Wait for GO, then tap it as quickly as possible.</p><button type="button" class="comp-btn" id="speedButton">READY</button><div id="speedTime"></div>`;
+   const btn=document.getElementById("speedButton");
+   btn.addEventListener("click",()=>{
+     if(btn.textContent==="READY"){
+       btn.disabled=true;btn.textContent="WAIT...";
+       setTimeout(()=>{btn.disabled=false;btn.textContent="GO";const start=performance.now();btn.onclick=null;btn.addEventListener("click",()=>{const ms=performance.now()-start;finish(Math.max(0,100-ms/8),`Reaction time: ${Math.round(ms)}ms`);},{once:true});},1200+Math.random()*1800);
+     }
+   });
+ } else if(kind==="hoh"||kind==="veto"||kind==="finale"){
+   g.innerHTML=`<p>${kind==="hoh"?"Win HoH to control nominations.":kind==="veto"?"Win Veto to gain the power to save a nominee.":"Reach the end and compete for the finale advantage."}</p><div class="game-grid"><button type="button" class="game-btn" id="stage1">Stage 1</button><button type="button" class="game-btn" id="stage2">Stage 2</button><button type="button" class="game-btn" id="stage3">Final Stage</button></div>`;
+   let score=0,stage=0;
+   g.querySelectorAll(".game-btn").forEach(btn=>btn.addEventListener("click",()=>{
+     stage++;score+=25+Math.floor(Math.random()*11);
+     btn.disabled=true;
+     if(stage===3) finish(Math.min(100,score),`You completed all three stages.`);
+   }));
+ } 
+}
+
+function playMemoryGame(el){
+  const nums=[...Array(9)].map((_,i)=>i+1).sort(()=>Math.random()-.5);
+  gameArea(el,`<p>Memorise this sequence for 3 seconds:</p><h2 id="memNums">${nums.join(" • ")}</h2><button class="game-btn" onclick="this.disabled=true;document.getElementById('memNums').textContent='? • ? • ? • ? • ? • ? • ? • ? • ?';document.getElementById('memInput').style.display='block'">Hide sequence</button><div id="memInput" style="display:none;margin-top:12px"><input id="memAnswer" placeholder="Type the sequence"><button class="game-btn" onclick="checkMemory(this,${JSON.stringify(nums)})">Submit</button></div>`);
+  setTimeout(()=>{const n=document.getElementById('memNums');if(n)n.textContent='? • ? • ? • ? • ? • ? • ? • ? • ?';},3000);
+}
+function checkMemory(el,nums){
+  const val=document.getElementById('memAnswer').value.replace(/\D/g,'').split('').map(Number);
+  let correct=0; nums.forEach((n,i)=>{if(val[i]===n)correct++});
+  finishGame(el,correct===9?'Perfect memory!':correct>=6?'Strong performance!':'You struggled with the sequence.',correct+'/9');
+}
+
+function playSpeedGame(el){
+  gameArea(el,`<p>Click <b>GO</b> as quickly as possible after the screen changes.</p><button class="game-btn" id="speedBtn" onclick="startSpeed(this)">READY</button><div id="speedResult"></div>`);
+}
+function startSpeed(btn){
+  btn.disabled=true; btn.textContent='WAIT...';
+  const delay=1200+Math.random()*2500;
+  setTimeout(()=>{btn.disabled=false;btn.textContent='GO!';btn.onclick=()=>{const t=performance.now();btn.disabled=true;finishGame(btn,'Lightning reflexes!',Math.round(10000/(t-window._speedStart)));};window._speedStart=performance.now();},delay);
+}
+
+function playBalanceGame(el){
+  gameArea(el,`<p>Keep the marker as close to the centre as possible.</p><input id="balance" type="range" min="0" max="100" value="50" style="width:100%"><button class="game-btn" onclick="scoreBalance(this)">Lock In</button>`);
+}
+function scoreBalance(el){
+  const v=Number(document.getElementById('balance').value);
+  const score=Math.max(0,100-Math.abs(50-v)*2);
+  finishGame(el,score>=90?'Excellent balance!':score>=70?'Solid balance.':'You wobbled too much.',score+'/100');
+}
+
+function playQuizGame(el){
+  const qs=[
+    ['How many days are in a week?',['5','7','10'],'7'],
+    ['Which direction is opposite east?',['North','South','West'],'West'],
+    ['How many minutes are in an hour?',['30','60','90'],'60'],
+    ['What comes after 9?',['8','10','11'],'10']
+  ];
+  const q=qs[Math.floor(Math.random()*qs.length)];
+  gameArea(el,`<p><b>${q[0]}</b></p>${q[1].map(x=>`<button class="game-btn" onclick="quizAnswer(this,'${x}','${q[2]}')">${x}</button>`).join('')}`);
+}
+function quizAnswer(el,x,correct){finishGame(el,x===correct?'Correct!':'Wrong answer.',x===correct?'1/1':'0/1')}
+
+function playSequenceGame(el){
+  const seq=[Math.floor(Math.random()*9)+1,Math.floor(Math.random()*9)+1,Math.floor(Math.random()*9)+1];
+  const next=seq[0]+seq[1]+seq[2];
+  gameArea(el,`<p>What number comes next? <b>${seq.join(' + ')} = ?</b></p><input id="seqAnswer" type="number"><button class="game-btn" onclick="sequenceAnswer(this,${next})">Submit</button>`);
+}
+function sequenceAnswer(el,correct){
+  const x=Number(document.getElementById('seqAnswer').value);
+  finishGame(el,x===correct?'Correct!':'Not quite.',x===correct?'1/1':'0/1');
+}
+function playFinaleGame(el){
+  gameArea(el,`<p>Final round: choose your strategy under pressure.</p><div class="game-grid"><button class="game-btn" onclick="finalChoice(this,3)">Safe</button><button class="game-btn" onclick="finalChoice(this,7)">Balanced</button><button class="game-btn" onclick="finalChoice(this,10)">All Out</button></div>`);
+}
+function finalChoice(el,score){
+  finishGame(el,score>=10?'You went all out!':score>=7?'You balanced risk and reward.':'You played it safe.',score+'/10');
+}
+</script>
+
+
+<script>
+/* End-of-day public popularity + transparent public vote totals. */
+window.bbPopularity = window.bbPopularity || {};
+
+function bbHousemateNames(){
+  try {
+    return (window.cast || cast || []).map(x=>x.name).filter(Boolean);
+  } catch(e){ return []; }
+}
+
+function bbPopularityValues(){
+  const names=bbHousemateNames();
+  const out={};
+  names.forEach((n,i)=>{
+    if(window.bbPopularity[n]==null){
+      // Initial popularity is deliberately varied, then persists and changes during play.
+      out[n]=Math.max(15,Math.min(95,58 + ((i*17)%31)-15));
+    } else out[n]=window.bbPopularity[n];
+  });
+  window.bbPopularity=out;
+  return out;
+}
+
+function changePopularity(name,delta){
+  const vals=bbPopularityValues();
+  if(vals[name]!=null) vals[name]=Math.max(0,Math.min(100,vals[name]+delta));
+}
+
+function renderEndOfDayPopularity(){
+  const vals=bbPopularityValues();
+  const entries=Object.entries(vals).sort((a,b)=>b[1]-a[1]);
+  const wrap=document.createElement("div");
+  wrap.className="popularity-panel";
+  wrap.id="endDayPopularity";
+  wrap.innerHTML=`<h3>📈 House Popularity — End of Day</h3>
+    <p>Public popularity based on the audience's fictional reactions to what happened in the house today.</p>
+    <div class="popularity-bars">${entries.map(([n,v])=>
+      `<div class="pop-row"><span>${n}</span><div class="pop-track"><div class="pop-fill" style="width:${v}%"></div></div><strong>${Math.round(v)}%</strong></div>`
+    ).join("")}</div>`;
+  return wrap;
+}
+
+function renderPublicVoteNumbers(votes, title="📊 Public Vote Results"){
+  const wrap=document.createElement("div");
+  wrap.className="public-votes";
+  wrap.innerHTML=`<h3>${title}</h3><p>Actual fictional vote totals are shown after the public vote closes.</p>`+
+    Object.entries(votes).sort((a,b)=>b[1]-a[1]).map(([n,v])=>
+      `<div class="vote-line"><span>${n}</span><strong>${Number(v).toLocaleString()} votes</strong></div>`
+    ).join("");
+  return wrap;
+}
+
+function attachEndOfDayPanels(){
+  // Find the current end-of-day/result area and append the popularity chart.
+  const candidates=[...document.querySelectorAll(".screen,.result,.results,.day-summary,.end-day")];
+  const target=candidates.find(x=>/end.?of.?day|day summary|late.?&.?live/i.test(x.innerText||""));
+  if(target && !target.querySelector("#endDayPopularity")) target.appendChild(renderEndOfDayPopularity());
+}
+
+// Hook into common existing end-of-day functions if present.
+["endDay","showEndOfDay","finishDay","nextDay"].forEach(fn=>{
+  if(typeof window[fn]==="function" && !window[fn].__bbWrapped){
+    const original=window[fn];
+    const wrapped=function(...args){
+      const r=original.apply(this,args);
+      setTimeout(attachEndOfDayPanels,50);
+      return r;
+    };
+    wrapped.__bbWrapped=true;
+    window[fn]=wrapped;
+  }
+});
+
+// Also make the panel available when a day/result screen is rendered.
+document.addEventListener("click",()=>setTimeout(attachEndOfDayPanels,100));
+</script>
+
+<script>
+/* Full challenge/reward layer. Results are playable and persistent. */
+window.bbCompetition = window.bbCompetition || {
+  wins:0, vetoWins:0, safety:false, hoh:false, rewards:[], powers:[],
+  track:[], lastResult:null
+};
+
+const BB_COMPETITIONS = {
+  "Endurance": {
+    desc:"Hold your position as long as possible.",
+    play:"endurance"
+  },
+  "Trivia": {
+    desc:"Answer house and general-knowledge questions.",
+    play:"trivia"
+  },
+  "Puzzle": {
+    desc:"Solve the puzzle against the clock.",
+    play:"puzzle"
+  },
+  "Speed": {
+    desc:"React quickly and complete the task before the timer.",
+    play:"speed"
+  },
+  "Accuracy": {
+    desc:"Hit the target as accurately as possible.",
+    play:"accuracy"
+  },
+  "Balance": {
+    desc:"Keep your marker near the centre.",
+    play:"balance"
+  },
+  "Memory": {
+    desc:"Remember the sequence and reproduce it.",
+    play:"memory"
+  },
+  "Strategy": {
+    desc:"Choose the right risk/reward strategy.",
+    play:"strategy"
+  },
+  "Social": {
+    desc:"Read the house and predict how people will react.",
+    play:"social"
+  },
+  "Team": {
+    desc:"Complete a team-style challenge.",
+    play:"team"
+  },
+  "Random": {
+    desc:"A chaotic surprise competition.",
+    play:"random"
+  },
+  "Finale": {
+    desc:"A multi-stage final competition.",
+    play:"finale"
+  }
+};
+
+function getNextBBEvent(){
+  if(!state.bbNextEvent){
+    const cycle=[
+      {kind:"task", title:"Shopping Task", icon:"🛒", intro:"Housemates, your shopping task starts now. Complete the challenge as a house and earn your weekly shopping budget.", game:"team", reward:"Shopping budget"},
+      {kind:"hoh", title:"Head of House Competition", icon:"👑", intro:"Housemates, it is time for your Head of House competition. The winner will have power over this week's nominations.", game:"hoh", reward:"Head of House + HoH room"},
+      {kind:"task", title:"Luxury Task", icon:"🎁", intro:"Housemates, today's task could earn you a luxury reward. Give it everything you've got.", game:"balance", reward:"Luxury reward"},
+      {kind:"veto", title:"Veto Competition", icon:"🟪", intro:"Housemates, it is time for the Veto competition. The winner will have the power to save a nominee.", game:"veto", reward:"Veto power"},
+      {kind:"task", title:"Power Task", icon:"⚡", intro:"Housemates, today's challenge comes with a secret power. Only the winner will discover what it is.", game:"random", reward:"Secret power"},
+      {kind:"hoh", title:"Head of House Competition", icon:"👑", intro:"Housemates, it is time to fight for the Head of House crown.", game:"hoh", reward:"Head of House + HoH room"}
+    ];
+    state.bbNextEvent=cycle[(Math.max(1,state.day)-1)%cycle.length];
+  }
+  return state.bbNextEvent;
+}
+
+function openCompetitionHub(){
+  document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));
+  const old=document.getElementById("competitionScreen");
+  if(old)old.remove();
+  const event=getNextBBEvent();
+  const s=document.createElement("section");
+  s.id="competitionScreen";
+  s.className="screen active";
+  s.innerHTML=`
+   <div class="topbar">
+    <button type="button" id="competitionBack">← Home</button>
+    <h2>Big Brother</h2>
+   </div>
+   <div class="comp-hub">
+    <div class="section-title">📢 BIG BROTHER ANNOUNCEMENT</div>
+    <h1 style="margin:8px 0">${event.icon} ${event.title}</h1>
+    <p style="font-size:16px;line-height:1.55;color:#eee">${event.intro}</p>
+    <div class="reward-box"><b>What is at stake?</b><br>${event.reward}</div>
+    <button type="button" class="send-action" id="startAnnouncedCompetition">Enter competition →</button>
+    <div class="flow-note" style="margin-top:12px">You cannot choose the competition or its outcome. Big Brother announces the event; Montrose plays the game; the result is then recorded.</div>
+   </div>`;
+  document.body.appendChild(s);
+  document.getElementById("competitionBack").onclick=()=>{
+    s.remove();showScreen("home");try{render()}catch(e){}
+  };
+  document.getElementById("startAnnouncedCompetition").onclick=()=>startAnnouncedCompetition(event);
+}
+
+function startAnnouncedCompetition(event){
+  const s=document.getElementById("competitionScreen");
+  if(!s)return;
+  const hub=s.querySelector(".comp-hub");
+  hub.innerHTML=`
+   <div class="section-title">${event.icon} ${event.title}</div>
+   <h2>Montrose's turn</h2>
+   <p>Play the challenge below. Everyone else's performances are simulated independently.</p>
+   <div id="announcedGameArea" class="challenge-result"></div>`;
+  const g=document.getElementById("announcedGameArea");
+  playCompetitionGame(event,g);
+}
+
+function playCompetitionGame(event,g){
+  const finish=(score,message)=>{
+    score=Math.max(0,Math.min(100,Number(score)||0));
+    const won=score>=70;
+    applyAnnouncedResult(event,won,score);
+    g.innerHTML=`
+      <h2>${won?"🏆 Montrose wins!":"💀 Montrose doesn't win"}</h2>
+      <p>${message}</p>
+      <p><b>Performance: ${Math.round(score)}/100</b></p>
+      <div class="reward-box">${won?`<b>Prize:</b> ${event.reward}`:`<b>Big Brother:</b> The competition continues without Montrose winning the power.`}</div>
+      <button type="button" class="send-action" id="competitionContinue">Continue →</button>`;
+    document.getElementById("competitionContinue").onclick=()=>{
+      safelyReturnHome();
+    };
+  };
+
+  if(event.game==="hoh"){
+    let stage=0,score=0;
+    g.innerHTML=`<p>Three-stage Head of House competition. Complete every stage.</p>
+      <div class="game-grid">
+       <button type="button" class="game-btn" id="hoh1">Stage 1</button>
+       <button type="button" class="game-btn" id="hoh2" disabled>Stage 2</button>
+       <button type="button" class="game-btn" id="hoh3" disabled>Final Stage</button>
+      </div>`;
+    const bs=[...g.querySelectorAll(".game-btn")];
+    bs.forEach((btn,i)=>btn.onclick=()=>{
+      if(i!==stage)return;
+      score += 25+Math.floor(Math.random()*11);
+      btn.disabled=true;stage++;
+      if(stage<3)bs[stage].disabled=false;
+      else finish(score,"You completed all three stages of the Head of House competition.");
+    });
+  } else if(event.game==="veto"){
+    const a=2+Math.floor(Math.random()*8),b=2+Math.floor(Math.random()*8),ans=a*b;
+    g.innerHTML=`<p>Solve the Veto puzzle before the clock runs out.</p>
+      <p style="font-size:20px"><b>${a} × ${b} = ?</b></p>
+      <input id="vetoAnswer" type="number" inputmode="numeric" placeholder="Your answer">
+      <button type="button" class="comp-btn" id="vetoSubmit">Lock in answer</button>`;
+    document.getElementById("vetoSubmit").onclick=()=>{
+      const correct=Number(document.getElementById("vetoAnswer").value)===ans;
+      finish(correct?100:20,correct?"Correct — excellent Veto performance.":"Incorrect — you lose valuable time.");
+    };
+  } else if(event.game==="team"){
+    g.innerHTML=`<p>Shopping task: complete the sequence in the correct order.</p>
+      <p>Remember: <b>1 → 2 → 3 → 4</b></p>
+      <div class="game-grid">
+       <button type="button" class="game-btn shop">1</button><button type="button" class="game-btn shop">2</button>
+       <button type="button" class="game-btn shop">3</button><button type="button" class="game-btn shop">4</button>
+      </div><div id="shopStatus"></div>`;
+    let next=1;
+    g.querySelectorAll(".shop").forEach(btn=>btn.onclick=()=>{
+      if(Number(btn.textContent)===next){
+        btn.disabled=true;next++;
+        document.getElementById("shopStatus").textContent=next===5?"Completed!":"Correct — keep going.";
+        if(next===5)finish(100,"Montrose completed the shopping task sequence.");
+      }else{
+        document.getElementById("shopStatus").textContent="Wrong order — the house loses time.";
+        finish(30,"The sequence was broken.");
+      }
+    });
+  } else if(event.game==="balance"){
+    g.innerHTML=`<p>Keep the marker as close to the centre as possible.</p>
+      <input id="taskBalance" type="range" min="0" max="100" value="50" style="width:100%">
+      <button type="button" class="comp-btn" id="taskBalanceLock">Lock in</button>`;
+    document.getElementById("taskBalanceLock").onclick=()=>{
+      const v=Number(document.getElementById("taskBalance").value);
+      finish(100-Math.abs(v-50)*2,"Your balance position was locked in.");
+    };
+  } else {
+    g.innerHTML=`<p>Big Brother has given Montrose a surprise challenge. Choose your risk level — the challenge itself decides the outcome.</p>
+      <div class="game-grid">
+       <button type="button" class="game-btn" id="randomLow">Careful</button>
+       <button type="button" class="game-btn" id="randomMid">Balanced</button>
+       <button type="button" class="game-btn" id="randomHigh">All out</button>
+      </div>`;
+    // The choice affects performance, not whether the user can simply declare a win.
+    document.getElementById("randomLow").onclick=()=>finish(45+Math.floor(Math.random()*30),"Montrose played carefully.");
+    document.getElementById("randomMid").onclick=()=>finish(55+Math.floor(Math.random()*36),"Montrose took a balanced approach.");
+    document.getElementById("randomHigh").onclick=()=>finish(50+Math.floor(Math.random()*51),"Montrose went all in.");
+  }
+}
+
+function applyAnnouncedResult(event,won,score){
+  const b=window.bbCompetition||{wins:0,vetoWins:0,safety:false,hoh:false,rewards:[],powers:[],track:[]};
+  window.bbCompetition=b;
+  b.track=b.track||[];
+  b.track.push({type:event.title,score,won});
+  if(won)b.wins=(b.wins||0)+1;
+  if(event.kind==="hoh" && won){
+    b.hoh=true;
+    b.rewards=b.rewards||[];
+    b.rewards.push("HoH room + nomination power");
+    state.hoh="Montrose";
+    state.known=state.known||[];
+    state.known.push("Montrose won Head of House.");
+    log(`<span class="system">👑 Big Brother:</span> Montrose has won Head of House and has nomination power.`);
+  }
+  if(event.kind==="veto" && won){
+    b.safety=true;b.powers=b.powers||[];b.powers.push("Veto");
+    state.vetoHolder="Montrose";state.veto="Montrose";
+    log(`<span class="system">🟪 Big Brother:</span> Montrose has won the Veto.`);
+  }
+  if(event.kind==="task" && won){
+    b.rewards=b.rewards||[];b.rewards.push(event.reward);
+    log(`<span class="system">🎁 Big Brother:</span> Montrose has helped win ${event.reward}.`);
+  }
+  state.bbNextEvent=null;
+}
+
+function safelyReturnHome(){
+  const s=document.getElementById("competitionScreen");
+  if(s)s.remove();
+  showScreen("home");
+  try{render();}catch(e){console.error(e);}
+}
+
+function bbRewardList(){
+  const b=window.bbCompetition;
+  const arr=[];
+  if(b.hoh) arr.push("👑 Current HoH");
+  if(b.safety) arr.push("🛡️ Safety");
+  b.rewards.forEach(x=>arr.push("🎁 "+x));
+  b.powers.forEach(x=>arr.push("⚡ "+x));
+  return arr.length?arr.map(x=>`<span class="reward-chip">${x}</span>`).join(""):"No active rewards or powers";
+}
+
+function startCompetition(type){
+  const s=document.getElementById("competitionScreen");
+  const area=document.createElement("div");
+  area.className="challenge-result";
+  area.id="activeCompetition";
+  area.innerHTML=`<h3>🏆 ${type} Competition</h3><div id="competitionGame"></div>`;
+  s.querySelector(".comp-hub").appendChild(area);
+  const g=area.querySelector("#competitionGame");
+  const finish=(label,score,reward)=>{
+    const pct=Math.max(0,Math.min(100,Number(score)));
+    const won=pct>=70;
+    if(won){
+      window.bbCompetition.wins++;
+      if(type==="Veto") window.bbCompetition.vetoWins++;
+      applyCompetitionReward(type,reward);
+    }
+    window.bbCompetition.track.push({type,score:pct,won});
+    window.bbCompetition.lastResult={type,score:pct,won};
+    g.innerHTML=`<h3>${won?"🏆 YOU WON!":"💀 YOU DIDN'T WIN"}</h3>
+      <p>${label}</p><p><b>Score: ${pct}/100</b></p>
+      ${won?`<div class="reward-box"><b>Reward:</b> ${reward}</div>`:"<p>Your result is recorded and the other housemates' performances are simulated independently.</p>"}
+      <button class="comp-btn" onclick="this.closest('.challenge-result').remove()">Done</button>`;
+    const list=document.getElementById("rewardList");
+    if(list) list.innerHTML=bbRewardList();
+  };
+
+  if(type==="Endurance") {
+    g.innerHTML=`<p>Keep the button pressed. Release whenever you think you've lasted long enough.</p><button class="comp-btn" id="holdBtn">HOLD</button><div id="holdTime">0.0s</div>`;
+    let start=performance.now(), timer=setInterval(()=>document.getElementById("holdTime")&&(document.getElementById("holdTime").textContent=((performance.now()-start)/1000).toFixed(1)+"s"),100);
+    const b=document.getElementById("holdBtn");
+    b.onmouseup=b.ontouchend=()=>{clearInterval(timer);let sec=(performance.now()-start)/1000;finish("You held on for "+sec.toFixed(1)+" seconds.",Math.min(100,sec*12),"HoH + luxury reward");};
+  } else if(type==="Trivia") {
+    const q=[
+      ["How many days are in a week?",["5","7","9"],"7"],
+      ["How many minutes are in an hour?",["30","60","90"],"60"],
+      ["Which comes first alphabetically?",["Zebra","Apple","Mango"],"Apple"],
+      ["How many sides does a triangle have?",["3","4","5"],"3"]
+    ][Math.floor(Math.random()*4)];
+    g.innerHTML=`<p><b>${q[0]}</b></p>${q[1].map(x=>`<button class="comp-btn" onclick="this.parentNode.querySelectorAll('button').forEach(b=>b.disabled=true);bbFinishActive(${x===q[2]?100:0},'${x===q[2]?"Correct answer!":"Wrong answer."}')">${x}</button>`).join("")}`;
+  } else if(type==="Puzzle") {
+    const a=Math.floor(Math.random()*8)+2,b=Math.floor(Math.random()*8)+2;
+    g.innerHTML=`<p>Solve: <b>${a} × ${b} = ?</b></p><input id="pAns" type="number"><button class="comp-btn" onclick="bbFinishActive(Number(document.getElementById('pAns').value)==${a*b}?100:0,'${a*b}')">Submit</button>`;
+  } else if(type==="Speed") {
+    g.innerHTML=`<p>Wait for GO, then tap it immediately.</p><button class="comp-btn" id="speedStart">READY</button><div id="speedScore"></div>`;
+    const b=g.querySelector("#speedStart");
+    b.onclick=()=>{b.disabled=true;b.textContent="WAIT...";setTimeout(()=>{b.disabled=false;b.textContent="GO!";let t=performance.now();b.onclick=()=>{let ms=performance.now()-t;bbFinishActive(Math.max(0,100-ms/8),"Reaction time: "+Math.round(ms)+"ms")}},1000+Math.random()*2500)};
+  } else if(type==="Accuracy" || type==="Balance") {
+    g.innerHTML=`<p>${type==="Accuracy"?"Aim for the centre target.":"Set the marker as close to 50 as possible."}</p><input id="aim" type="range" min="0" max="100" value="50" style="width:100%"><button class="comp-btn" onclick="bbFinishActive(100-Math.abs(Number(document.getElementById('aim').value)-50)*2,'Your final position was locked in.')">Lock In</button>`;
+  } else if(type==="Memory") {
+    const seq=Array.from({length:7},()=>Math.floor(Math.random()*10));
+    g.innerHTML=`<p>Memorise this sequence. It disappears in 4 seconds.</p><h2 id="seq">${seq.join(" • ")}</h2><input id="memAns" placeholder="Type the digits"><button class="comp-btn" onclick="bbFinishActive(document.getElementById('memAns').value=== '${seq.join("")}'?100:30,'Sequence checked.')">Submit</button>`;
+    setTimeout(()=>{const x=document.getElementById("seq");if(x)x.textContent="??? • ??? • ??? • ???";},4000);
+  } else if(type==="Strategy") {
+    g.innerHTML=`<p>Choose your approach:</p><div class="comp-grid"><button class="comp-btn" onclick="bbFinishActive(55,'You played cautiously.')">Safe</button><button class="comp-btn" onclick="bbFinishActive(80,'You balanced risk and reward.')">Balanced</button><button class="comp-btn" onclick="bbFinishActive(100,'You went all in.')">All Out</button></div>`;
+  } else if(type==="Social") {
+    g.innerHTML=`<p>Who would you trust with a secret?</p><div class="comp-grid">${bbHousemateNames().slice(0,6).map(n=>`<button class="comp-btn" onclick="bbFinishActive(60+Math.floor(Math.random()*41),'You chose ${n}.')">${n}</button>`).join("")}</div>`;
+  } else if(type==="Team") {
+    g.innerHTML=`<p>Pick your team-mate.</p><div class="comp-grid">${bbHousemateNames().slice(0,6).map(n=>`<button class="comp-btn" onclick="bbFinishActive(65+Math.floor(Math.random()*36),'Team formed with ${n}.')">${n}</button>`).join("")}</div>`;
+  } else if(type==="Random") {
+    const score=45+Math.floor(Math.random()*56);
+    g.innerHTML=`<p>🎲 The challenge is randomly selected!</p><button class="comp-btn" onclick="bbFinishActive(${score},'The random challenge is complete.')">Play</button>`;
+  } else {
+    g.innerHTML=`<p>Finale challenge: complete all three stages.</p><div class="comp-grid"><button class="comp-btn" onclick="bbFinishActive(75,'Stage 1 completed.')">Stage 1</button><button class="comp-btn" onclick="bbFinishActive(85,'Stage 2 completed.')">Stage 2</button><button class="comp-btn" onclick="bbFinishActive(95,'Stage 3 completed.')">Stage 3</button></div>`;
+  }
+
+  window.bbFinishActive=score=>finish("Competition complete.",score,"");
+}
+
+function applyCompetitionReward(type,reward){
+  const b=window.bbCompetition;
+  if(type==="Endurance" || type==="Finale"){b.hoh=true;b.rewards.push("HoH room + luxury reward");}
+  else if(type==="Accuracy" || type==="Balance" || type==="Puzzle"){b.safety=true;b.rewards.push("Safety for the next eviction");}
+  else if(type==="Strategy"){b.powers.push("Nomination Blocker");}
+  else if(type==="Memory"){b.powers.push("Extra Vote");}
+  else if(type==="Speed"){b.powers.push("Secret Veto");}
+  else if(type==="Trivia"){b.rewards.push("Luxury shopping reward");}
+  else if(type==="Social"){b.powers.push("Information advantage");}
+  else if(type==="Team"){b.rewards.push("Team luxury reward");}
+  else if(type==="Random"){b.powers.push(["Double Veto","Vote Steal","Force Replacement Nominee","Anonymous Nomination"][Math.floor(Math.random()*4)]);}
+}
+
+function bbHousemateNames(){
+  try{return (window.cast||cast||[]).map(x=>x.name).filter(Boolean)}catch(e){return[]}
+}
+</script>
+
+<style id="modern-ui-redesign">
+:root{
+  --bg:#07070b;
+  --panel:#111118;
+  --panel2:#171721;
+  --panel3:#1d1d29;
+  --line:#2b2b3a;
+  --text:#f7f7fb;
+  --muted:#9b9bab;
+  --accent:#8b5cf6;
+  --accent2:#c084fc;
+  --pink:#ec4899;
+  --green:#34d399;
+  --red:#fb7185;
+  --gold:#f5c451;
+  --shadow:0 18px 50px rgba(0,0,0,.35);
+}
+
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{
+  margin:0;
+  background:
+    radial-gradient(circle at 15% 0%,rgba(139,92,246,.14),transparent 32%),
+    radial-gradient(circle at 90% 15%,rgba(236,72,153,.09),transparent 28%),
+    var(--bg);
+  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text",Inter,Arial,sans-serif;
+  min-height:100vh;
+}
+button,input,textarea,select{font:inherit}
+button{transition:transform .16s ease,background .16s ease,border-color .16s ease,box-shadow .16s ease}
+button:active{transform:scale(.97)}
+
+.screen{
+  width:min(100%,760px);
+  min-height:100vh;
+  margin:auto;
+  padding:20px 16px 90px;
+}
+
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:20;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px 0 16px;
+  background:linear-gradient(var(--bg) 72%,transparent);
+  backdrop-filter:blur(12px);
+}
+.topbar h2{margin:0;font-size:20px;letter-spacing:-.3px}
+.topbar button,
+button:not(.action-card):not(.game-btn):not(.comp-btn){
+  color:var(--text);
+  background:var(--panel2);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:9px 13px;
+  cursor:pointer;
+}
+.topbar button:hover{border-color:#55556d;background:var(--panel3)}
+
+h1,h2,h3{letter-spacing:-.5px}
+p{color:#c5c5d0;line-height:1.5}
+
+.action-card{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  width:100%;
+  margin:10px 0;
+  padding:16px;
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:linear-gradient(145deg,var(--panel2),var(--panel));
+  box-shadow:0 8px 24px rgba(0,0,0,.18);
+  color:var(--text);
+  cursor:pointer;
+}
+.action-card:hover{
+  transform:translateY(-2px);
+  border-color:#55556d;
+  box-shadow:var(--shadow);
+}
+.action-card b{display:block;font-size:15px}
+.action-card small{display:block;color:var(--muted);margin-top:4px}
+.action-icon{
+  width:44px;height:44px;
+  display:grid;place-items:center;
+  flex:0 0 44px;
+  border-radius:14px;
+  background:linear-gradient(145deg,rgba(139,92,246,.25),rgba(236,72,153,.12));
+  border:1px solid rgba(139,92,246,.3);
+  font-size:21px;
+}
+
+.mini-game,.comp-hub{
+  background:linear-gradient(145deg,#15151f,#0f0f16);
+  border:1px solid var(--line);
+  border-radius:22px;
+  padding:20px;
+  box-shadow:var(--shadow);
+}
+.game-grid,.comp-grid{gap:10px}
+.game-btn,.comp-btn{
+  background:var(--panel2)!important;
+  color:var(--text)!important;
+  border:1px solid var(--line)!important;
+  border-radius:14px!important;
+  padding:13px!important;
+}
+.game-btn:hover,.comp-btn:hover{
+  background:var(--panel3)!important;
+  border-color:var(--accent)!important;
+  box-shadow:0 0 0 3px rgba(139,92,246,.1);
+}
+.reward-box,.challenge-result,.public-votes,.game-result,.popularity-panel{
+  background:#0d0d14!important;
+  border:1px solid var(--line)!important;
+  border-radius:16px!important;
+}
+
+.pop-track{background:#242432!important}
+.pop-fill{background:linear-gradient(90deg,var(--accent),var(--pink))!important}
+
+input,textarea,select{
+  width:100%;
+  color:var(--text);
+  background:#0d0d14;
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:12px;
+  outline:none;
+}
+input:focus,textarea:focus,select:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(139,92,246,.12);
+}
+
+.reward-chip{
+  background:#181825;
+  border-color:#353548;
+  color:#dddde8;
+}
+
+.backdoor-badge{
+  background:rgba(251,113,133,.12)!important;
+  border-color:rgba(251,113,133,.35)!important;
+  color:#fda4af;
+}
+
+/* Make headings and status cards feel like a single coherent system */
+.card,.panel,.stat,.box{
+  background:linear-gradient(145deg,var(--panel2),var(--panel))!important;
+  border-color:var(--line)!important;
+  border-radius:18px!important;
+}
+.badge,.tag{
+  border-radius:999px!important;
+}
+
+/* Cleaner scrollbar */
+::-webkit-scrollbar{width:7px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#30303d;border-radius:99px}
+::-webkit-scrollbar-thumb:hover{background:#45455a}
+
+@media(max-width:600px){
+  .screen{padding:14px 12px 70px}
+  .mini-game,.comp-hub{padding:16px}
+  .action-card{padding:14px}
+}
+</style>
+<script id="conversation-exit-safe">
+(function(){
+  function bindConversationExit(){
+    const btn=document.getElementById("conversation-exit");
+    if(btn && !btn.dataset.bound){
+      btn.dataset.bound="1";
+      btn.addEventListener("click",function(){
+        state.currentConversation=null;
+        const s=document.getElementById("screen-conversation");
+        if(s)s.classList.remove("active");
+        const home=document.getElementById("screen-home");
+        if(home)home.classList.add("active");
+        try{render();}catch(e){console.error(e);}
+      });
+    }
+  }
+  setInterval(bindConversationExit,500);
+})();
+</script>
+
+<style id="bright-ui">
+:root{
+ --bg:#f4f0ff;
+ --panel:#ffffff;
+ --panel2:#ffffff;
+ --panel3:#f0eaff;
+ --line:#ddd4ef;
+ --text:#211b2e;
+ --muted:#71677f;
+ --accent:#7c3aed;
+ --accent2:#a855f7;
+ --pink:#db2777;
+}
+body{
+ background:
+  radial-gradient(circle at 10% 0%,rgba(168,85,247,.20),transparent 30%),
+  radial-gradient(circle at 95% 10%,rgba(236,72,153,.14),transparent 28%),
+  linear-gradient(135deg,#faf8ff,#eee8ff);
+ color:var(--text);
+}
+.screen{color:var(--text)}
+.topbar{
+ background:linear-gradient(#f4f0ff 72%,transparent);
+}
+.topbar button,.backbtn{
+ background:#fff!important;
+ color:#30283b!important;
+ border-color:#d8cfea!important;
+ box-shadow:0 3px 12px rgba(64,42,100,.08);
+}
+.action-card,.live-feed-card,.mini-game,.comp-hub,.card{
+ background:rgba(255,255,255,.92)!important;
+ border-color:#ddd4ef!important;
+ box-shadow:0 10px 30px rgba(70,45,105,.10);
+ color:#241d31!important;
+}
+.action-card small,.live-feed-copy small,.screen-subtitle{color:#766b84!important}
+.action-icon{
+ background:linear-gradient(145deg,#eee5ff,#ffe5f2)!important;
+ border-color:#d8c2f5!important;
+}
+.game-btn,.comp-btn,.conversation-choice,.preset-btn{
+ background:#fff!important;
+ color:#292133!important;
+ border-color:#d9d0e8!important;
+}
+.game-btn:hover,.comp-btn:hover,.conversation-choice:hover,.preset-btn:hover{
+ background:#f4edff!important;
+ border-color:#9b6de0!important;
+}
+.reward-box,.challenge-result,.public-votes,.game-result,.popularity-panel,.flow-note{
+ background:#faf8ff!important;
+ border-color:#ddd4ef!important;
+ color:#3b3347!important;
+}
+input,textarea,select{
+ background:#fff!important;
+ color:#292133!important;
+ border-color:#d3c8e4!important;
+}
+.conversation-card{background:rgba(255,255,255,.96)!important}
+.chat-bubble.them{
+ background:#f0edf6!important;
+ color:#292133!important;
+ border-color:#ddd4e8!important;
+}
+.chat-bubble.me{
+ background:linear-gradient(135deg,#7c3aed,#db2777)!important;
+ color:#fff!important;
+}
+.conversation-flow{border-color:#ddd4ef}
+.flow-continue{
+ background:linear-gradient(90deg,#7c3aed,#db2777)!important;
+ color:#fff!important;
+ border:0!important;
+}
+.send-action{
+ background:linear-gradient(90deg,#7c3aed,#db2777)!important;
+ box-shadow:0 6px 18px rgba(124,58,237,.18);
+}
+.live-feed-screen-head{
+ background:#faf8ff!important;
+ border-color:#ddd4ef!important;
+}
+.live-feed-screen-head span:last-child{color:#746a82!important}
+.house-pulse{
+ color:#71677f!important;
+}
+</style>
+
+<style id="house-update-and-muted-ui">
+.house-update-card{max-width:760px}
+.house-update-main{margin-top:16px;padding:16px;border-radius:16px;background:#f1edf8;border:1px solid #d8cee5}
+.house-update-section{margin-top:16px;padding-top:14px;border-top:1px solid #ded6e8}
+.section-mini-title{font-size:10px;letter-spacing:.12em;font-weight:900;color:#786c88;margin-bottom:8px}
+.house-update-line{padding:10px 12px;margin:7px 0;border-radius:12px;background:#f7f3fa;border:1px solid #ded6e8;color:#393040}
+.house-update-effect{display:flex;justify-content:space-between;gap:12px;padding:10px 12px;margin:7px 0;border-radius:12px;background:#f7f3fa;border:1px solid #ded6e8}
+.house-update-effect .positive{color:#15803d;font-weight:800}
+.house-update-effect .negative{color:#be123c;font-weight:800}
+.house-update-effect .neutral{color:#6b6174;font-weight:700}
+
+:root{
+ --bg:#e9e3f1;
+ --panel:#f7f4fa;
+ --panel2:#f8f5fb;
+ --panel3:#eee8f5;
+ --line:#d1c6dc;
+ --text:#2b2433;
+ --muted:#71677b;
+}
+body{
+ background:
+  radial-gradient(circle at 10% 0%,rgba(139,92,246,.12),transparent 30%),
+  radial-gradient(circle at 90% 10%,rgba(236,72,153,.08),transparent 28%),
+  linear-gradient(135deg,#eee9f4,#e5dfea);
+}
+.topbar{background:linear-gradient(#e9e3f1 72%,transparent)!important}
+.card,.action-card,.mini-game,.comp-hub,.live-feed-card{
+ background:rgba(248,245,251,.96)!important;
+ border-color:#d1c6dc!important;
+ box-shadow:0 8px 25px rgba(62,45,78,.08)!important;
+}
+.chat-bubble.them{background:#e5e0ea!important;border-color:#d0c6d9!important}
+.reward-box,.challenge-result,.public-votes,.game-result,.popularity-panel,.flow-note{
+ background:#f2edf6!important;border-color:#d6ccdf!important
+}
+</style>
+</body>
+</html>
