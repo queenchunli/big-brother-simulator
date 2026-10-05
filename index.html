@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RuPaul's Drag Race: Advanced RPG Simulator</title>
+    <style>
+        :root {
+            --primary: #ff007f;
+            --secondary: #7928ca;
+            --accent: #00f2fe;
+            --dark: #0f0f0f;
+            --card-bg: #1a1a1a;
+            --panel-bg: #242424;
+            --light: #ffffff;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--dark);
+            color: var(--light);
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(255, 0, 127, 0.4);
+            border: 2px solid var(--primary);
+            box-sizing: border-box;
+            margin-top: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+            font-size: 22px;
+            text-shadow: 0 0 10px rgba(255, 0, 127, 0.5);
+        }
+        .subtitle {
+            text-align: center;
+            color: #aaa;
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+        .screen {
+            display: none;
+        }
+        .screen.active {
+            display: block;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+            color: #ff75bc;
+            font-size: 14px;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #444;
+            background: #2a2a2a;
+            color: white;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 8px rgba(255, 0, 127, 0.4);
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.2s;
+            margin-top: 10px;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        .choice-btn {
+            background: #282828;
+            border: 1px solid var(--secondary);
+            margin-bottom: 10px;
+            text-align: left;
+            padding: 14px;
+            font-size: 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: white;
+            width: 100%;
+            box-sizing: border-box;
+            transition: all 0.2s;
+        }
+        .choice-btn:hover {
+            background: var(--secondary);
+            border-color: var(--primary);
+        }
+        .log-box {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 12px;
+            height: 180px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 13px;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        .log-entry {
+            margin-bottom: 8px;
+            border-bottom: 1px solid #222;
+            padding-bottom: 4px;
+        }
+        .highlight {
+            color: var(--accent);
+            font-weight: bold;
+        }
+        .queen-hud {
+            display: flex;
+            justify-content: space-between;
+            background: var(--panel-bg);
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            border: 1px solid #444;
+        }
+        .hud-item span {
+            color: var(--primary);
+            font-weight: bold;
+        }
+        .look-card {
+            background: #222;
+            border: 1px dashed var(--accent);
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Screen 1: Create Queen -->
+        <div id="screen-create" class="screen active">
+            <h1>RuPaul's Drag Race</h1>
+            <div class="subtitle">Advanced Mobile RPG Simulator</div>
+            <div class="form-group">
+                <label for="dragName">Your Drag Name:</label>
+                <input type="text" id="dragName" value="Crystal Lubrikant">
+            </div>
+            <div class="form-group">
+                <label for="dragStyle">Drag Archetype:</label>
+                <select id="dragStyle">
+                    <option value="Chaos">Alternative / Chaos</option>
+                    <option value="Comedy">Comedy Queen</option>
+                    <option value="Fashion">Fashion / Look Queen</option>
+                    <option value="Assassin">Lip-Sync Assassin</option>
+                    <option value="Pageant">Pageant Queen</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="catchphrase">Signature Catchphrase:</label>
+                <input type="text" id="catchphrase" value="Let loose!">
+            </div>
+            <button onclick="startSimulation()">Enter the Werkroom</button>
+        </div>
+
+        <!-- Screen 2: Main Hub -->
+        <div id="screen-game" class="screen">
+            <div class="queen-hud">
+                <div class="hud-item">Queen: <span id="hudName">Crystal</span></div>
+                <div class="hud-item">Ep: <span id="hudEp">1</span></div>
+                <div class="hud-item">Phase: <span id="hudPhase">Werkroom</span></div>
+            </div>
+
+            <h1 id="stageTitle">Episode 1: Werkroom</h1>
+            <div class="subtitle" id="stageSub">Make your strategic choices</div>
+
+            <div id="lookCard" class="look-card" style="display:none;"></div>
+            <div id="logBox" class="log-box"></div>
+
+            <div id="choicesContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        let gameState = {
+            player: { name: "", style: "", catchphrase: "", wins: 0 },
+            episode: 1,
+            phase: 'werkroom',
+            bottomTwo: []
+        };
+
+        const botNames = ["Trixie Mattel", "Bob the Drag Queen", "Jinkx Monsoon", "Plane Jane"];
+
+        function startSimulation() {
+            const name = document.getElementById('dragName').value.trim() || "Crystal Lubrikant";
+            const style = document.getElementById('dragStyle').value;
+            const catchphrase = document.getElementById('catchphrase').value.trim() || "Let loose!";
+
+            gameState.player = { name, style, catchphrase, wins: 0 };
+
+            document.getElementById('screen-create').classList.remove('image-container') || null;
+            document.getElementById('screen-create').classList.remove('active');
+            document.getElementById('screen-game').classList.add('active');
+            
+            updateHUD();
+            addLog(`RuPaul welcomes everyone to the Werkroom! You walk in shouting: <span class="highlight">"${catchphrase}"</span> 💅`);
+            setupWerkroomPhase();
+        }
+
+        function updateHUD() {
+            document.getElementById('hudName').innerText = gameState.player.name;
+            document.getElementById('hudEp').innerText = gameState.episode;
+            document.getElementById('hudPhase').innerText = gameState.phase.toUpperCase();
+        }
+
+        function addLog(text) {
+            const box = document.getElementById('logBox');
+            box.innerHTML += `<div class="log-entry">${text}</div>`;
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function setupWerkroomPhase() {
+            gameState.phase = 'werkroom';
+            updateHUD();
+            document.getElementById('stageTitle').innerText = `Ep ${gameState.episode}: Werkroom`;
+            document.getElementById('stageSub').innerText = "Choose your pre-challenge strategy:";
+            document.getElementById('lookCard').style.display = 'none';
+
+            const container = document.getElementById('choicesContainer');
+            container.innerHTML = `
+                <button class="choice-btn" onclick="werkroomChoice(1)">💬 Form alliance & kiki with Bob the Drag Queen</button>
+                <button class="choice-btn" onclick="werkroomChoice(2)">✂️ Focus 100% on sewing your runway masterpiece</button>
+                <button class="choice-btn" onclick="werkroomChoice(3)">🎭 Spy on rival stations and throw subtle shade</button>
+            `;
+        }
+
+        function werkroomChoice(choice) {
+            if (choice === 1) addLog(`You bond with Bob over strategy, building a strong alliance!`);
+            else if (choice === 2) addLog(`You spend every second perfecting your garment seams. Immaculate construction!`);
+            else addLog(`You throw cheeky shade across the room. Tensions are high!`);
+            setupChallengeChoice();
+        }
+
+        function setupChallengeChoice() {
+            gameState.phase = 'challenge';
+            updateHUD();
+            document.getElementById('stageTitle').innerText = `Ep ${gameState.episode}: Maxi-Challenge`;
+            document.getElementById('stageSub').innerText = "Choose your performance approach:";
+
+            const challenges = ["The Comedy Roast", "Avant-Garde Recycled Couture", "Snatch Game"];
+            let currentChallenge = challenges[(gameState.episode - 1) % challenges.length];
+
+            addLog(`RuPaul announces: <span class="highlight">${currentChallenge}</span>!`);
+
+            const container = document.getElementById('choicesContainer');
+            container.innerHTML = `
+                <button class="choice-btn" onclick="resolveChallenge('bold')">🔥 Take a massive creative risk (High reward/danger)</button>
+                <button class="choice-btn" onclick="resolveChallenge('safe')">⚖️ Play it smart, polished, and calculated</button>
+                <button class="choice-btn" onclick="resolveChallenge('funny')">🤪 Lean entirely into absurd camp and comedy</button>
+            `;
+        }
+
+        function resolveChallenge(tactic) {
+            let roll = Math.random();
+            let won = (tactic === 'bold' && roll > 0.3) || (tactic === 'safe' && roll > 0.5) || (tactic === 'funny' && roll > 0.4);
+            let inBottom = !won && roll < 0.3;
+
+            let lookDesc = `✨ <b>Runway Look:</b> A stunning ${gameState.player.style} masterpiece styled with ${tactic} flair, neon accents, and couture details.`;
+            let card = document.getElementById('lookCard');
+            card.style.display = 'block';
+            card.innerHTML = lookDesc;
+            addLog(lookDesc);
+
+            if (won) {
+                gameState.player.wins++;
+                addLog(`🏆 <b>You win the Maxi-Challenge this week!</b> 🎉`);
+                setupUntucked(false);
+            } else if (inBottom) {
+                gameState.bottomTwo = [gameState.player.name, "Plane Jane"];
+                addLog(`⚠️ <b>You landed in the Bottom Two with Plane Jane!</b>`);
+                setupUntucked(true);
+            } else {
+                addLog(`👍 Solid safe performance. Advancing to next episode.`);
+                gameState.episode++;
+                if (gameState.episode > 3) triggerFinale();
+                else setupWerkroomPhase();
+            }
+        }
+
+        function setupUntucked(isBottom) {
+            gameState.phase = 'untucked';
+            updateHUD();
+            document.getElementById('stageTitle').innerText = `Backstage: Untucked`;
+            document.getElementById('stageSub').innerText = isBottom ? "Fight for your life in the Lip-Sync!" : "Celebrate your safety:";
+
+            const container = document.getElementById('choicesContainer');
+            if (isBottom) {
+                container.innerHTML = `
+                    <button class="choice-btn" onclick="resolveLipSync('stunts')">🤸‍♀️ Unleash high-energy stunts and death drops</button>
+                    <button class="choice-btn" onclick="resolveLipSync('emotional')">💧 Focus on deep emotional storytelling and eye contact</button>
+                    <button class="choice-btn" onclick="resolveLipSync('comedy')">🤡 Lean into goofy, campy choreography</button>
+                `;
+            } else {
+                container.innerHTML = `
+                    <button class="choice-btn" onclick="advanceSafe()">🥂 Toast with the queens and prep for next week</button>
+                `;
+            }
+        }
+
+        function advanceSafe() {
+            addLog(`Onto Episode ${++gameState.episode}!`);
+            if (gameState.episode > 3) triggerFinale();
+            else setupWerkroomPhase();
+        }
+
+        function resolveLipSync(style) {
+            addLog(`🎶 The lip-sync track plays! You deliver a ${style} performance.`);
+            let survived = Math.random() > 0.25; // 75% win rate when strategic
+
+            if (survived) {
+                addLog(`RuPaul declares: <span class="highlight">"${gameState.player.name}, shantay you stay!"</span> 👑`);
+                gameState.episode++;
+                if (gameState.episode > 3) triggerFinale();
+                else setupWerkroomPhase();
+            } else {
+                addLog(`💔 RuPaul sighs: "${gameState.player.name}, sashay away." Eliminated!`);
+                document.getElementById('stageTitle').innerText = "ELIMINATED";
+                document.getElementById('stageSub').innerText = "Better luck next season!";
+                document.getElementById('choicesContainer').innerHTML = `<button class="choice-btn" onclick="location.reload()">🔄 Play Again</button>`;
+            }
+        }
+
+        function triggerFinale() {
+            document.getElementById('stageTitle').innerText = "👑 GRAND FINALE 👑";
+            document.getElementById('stageSub').innerText = "The crown is yours!";
+            document.getElementById('lookCard').style.display = 'none';
+            addLog(`👑 <span class="highlight">RuPaul crowns ${gameState.player.name} as America's Next Drag Superstar!</span> 🎉✨`);
+            document.getElementById('choicesContainer').innerHTML = `<button class="choice-btn" onclick="location.reload()">🔄 Start New Season</button>`;
+        }
+    </script>
+</body>
+</html>
